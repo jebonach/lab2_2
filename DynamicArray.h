@@ -46,14 +46,14 @@ public:
 
     T Get(int index) const {
         if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::Get() index out of range");
+            throw std::out_of_range("DynamicArray::Get() index out of range(unluck)");
         }
         return data[index];
     }
 
     void Set(int index, T value) {
         if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::Set() index out of range");
+            throw std::out_of_range("DynamicArray::Set() index out of range(unluck)");
         }
         data[index] = value;
     }
@@ -90,14 +90,14 @@ public:
 
     T& operator[](int index) {
         if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::operator[] index out of range");
+            throw std::out_of_range("DynamicArray::operator[] index out of range(unluck)");
         }
         return data[index];
     }
 
     const T& operator[](int index) const {
         if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::operator[] index out of range");
+            throw std::out_of_range("DynamicArray::operator[] index out of range(unluck)");
         }
         return data[index];
     }
