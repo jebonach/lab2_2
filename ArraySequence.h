@@ -31,7 +31,7 @@ public:
     virtual T GetFirst() const override {
         if (items->GetSize() == 0) {
             throw std::out_of_range("ArraySequence::GetFirst() - sequence is empty(upset)");
-        }Ё
+        }
         return items->Get(0);
     }
 
