@@ -9,7 +9,7 @@ int main() {
 Работы над ошибками в отдельном файле
 в DA в resize заполнять новые нулями
 arraysequence - capacity
-concat
-где-то лишние деструкторы
-где-то копируются методы просто так
+concat за o(1)
+где-то лишние деструкторы (в arraysequence listsequence)
+где-то копируются методы просто так (listsequence::GetSubsequence)
 */

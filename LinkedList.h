@@ -146,15 +146,25 @@ public:
         length++;
     }
 
-    LinkedList<T>* Concat(const LinkedList<T>* list) const {
-        LinkedList<T>* result = new LinkedList<T>(*this);
-        Node* current = list->head;
-        while (current) {
-            result->Append(current->data);
-            // сделать o(1)
-            current = current->next;
+    LinkedList<T>* Concat(LinkedList<T>* list) {
+        if (!list || list->length == 0) {
+            return this;
         }
-        return result;
+        if (this->length == 0) {
+            this->head = list->head;
+            this->tail = list->tail;
+            this->length = list->length;
+        } else {
+            this->tail->next = list->head;
+            this->tail = list->tail;
+            this->length += list->length;
+        }
+        
+        list->head = nullptr;
+        list->tail = nullptr;
+        list->length = 0;
+
+        return this;
     }
     
     LinkedList<T>& operator=(const LinkedList<T>& other) {

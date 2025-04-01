@@ -1,6 +1,5 @@
 #pragma once
 #include <stdexcept>
-#include <initializer_list>
 
 template <class T>
 class DynamicArray {
@@ -9,28 +8,26 @@ private:
     int size;
 
 public:
-    DynamicArray(T* items, int count) {
+    DynamicArray(const T* items, int count) {
         if (count < 0) {
-            throw std::out_of_range("DynamicArray::count < 0");
+            throw std::out_of_range("DynamicArray: count < 0");
         }
         size = count;
-        data = new T[count];
-        for (int i = 0; i < count; i++) {
+        data = new T[size];
+        for (int i = 0; i < size; i++) {
             data[i] = items[i];
         }
     }
 
-    DynamicArray(std::initializer_list<T> list)
-        : DynamicArray(list.size() ? const_cast<T*>(list.begin()) : nullptr,
-                       static_cast<int>(list.size())) {
-    }
-
     DynamicArray(int size) {
         if (size < 0) {
-            throw std::out_of_range("DynamicArray::size < 0");
+            throw std::out_of_range("DynamicArray: size < 0");
         }
         this->size = size;
         data = new T[size];
+        for (int i = 0; i < size; i++) {
+            data[i] = T();
+        }
     }
 
     DynamicArray(const DynamicArray<T>& other) {
@@ -40,36 +37,40 @@ public:
             data[i] = other.data[i];
         }
     }
+
     ~DynamicArray() {
         delete[] data;
-    }
-
-    T Get(int index) const {
-        if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::Get() index out of range(unluck)");
-        }
-        return data[index];
-    }
-
-    void Set(int index, T value) {
-        if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::Set() index out of range(unluck)");
-        }
-        data[index] = value;
     }
 
     int GetSize() const {
         return size;
     }
 
+    T Get(int index) const {
+        if (index < 0 || index >= size) {
+            throw std::out_of_range("DynamicArray::Get out of range");
+        }
+        return data[index];
+    }
+
+    void Set(int index, const T& value) {
+        if (index < 0 || index >= size) {
+            throw std::out_of_range("DynamicArray::Set out of range");
+        }
+        data[index] = value;
+    }
+
     void Resize(int newSize) {
         if (newSize < 0) {
-            throw std::out_of_range("DynamicArray::Resize() newSize < 0");
+            throw std::out_of_range("DynamicArray::Resize newSize < 0");
         }
         T* newData = new T[newSize];
         int minSize = (newSize < size) ? newSize : size;
         for (int i = 0; i < minSize; i++) {
             newData[i] = data[i];
+        }
+        for (int i = minSize; i < newSize; i++) {
+            newData[i] = T();
         }
         delete[] data;
         data = newData;
@@ -90,14 +91,13 @@ public:
 
     T& operator[](int index) {
         if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::operator[] index out of range(unluck)");
+            throw std::out_of_range("DynamicArray::operator[] out of range");
         }
         return data[index];
     }
-
     const T& operator[](int index) const {
         if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::operator[] index out of range(unluck)");
+            throw std::out_of_range("DynamicArray::operator[] out of range");
         }
         return data[index];
     }

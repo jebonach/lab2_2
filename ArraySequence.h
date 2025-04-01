@@ -1,52 +1,38 @@
 #pragma once
-#include "Sequence.h"
 #include "DynamicArray.h"
+#include "Sequence.h"
+#include <stdexcept>
 
 template <class T>
 class ArraySequence : public Sequence<T> {
-protected:
+private:
     DynamicArray<T>* items;
-
-    //для immutable
-    static void AppendHelper(DynamicArray<T>& arr, const T& item) {
-        arr.Resize(arr.GetSize() + 1);
-        arr.Set(arr.GetSize() - 1, item);
-    }
-
-    static void PrependHelper(DynamicArray<T>& arr, const T& item) {
-        arr.Resize(arr.GetSize() + 1);
-        for (int i = arr.GetSize() - 1; i > 0; i--) {
-            arr.Set(i, arr.Get(i - 1));
-        }
-        arr.Set(0, item);
-    } 
-
-    static void InsertAtHelper(DynamicArray<T>& arr, const T& item, int index) {
-        if (index < 0 || index > arr.GetSize()) {
-            throw std::out_of_range("InsertAtHelper - index out of range");
-        }
-        arr.Resize(arr.GetSize() + 1);
-        for (int i = arr.GetSize() - 1; i > index; i--) {
-            arr.Set(i, arr.Get(i - 1));
-        }
-        arr.Set(index, item);
-    }
-
+    int count;
+    int capacity;
 
 public:
     ArraySequence() {
-        items = new DynamicArray<T>(0);
+        capacity = 4;
+        items = new DynamicArray<T>(capacity);
+        count = 0;
     }
 
-    ArraySequence(T* arr, int count) {
-        items = new DynamicArray<T>(arr, count);
-    }
-
-    ArraySequence(std::initializer_list<T> list) {
-        items = new DynamicArray<T>(list);
+    ArraySequence(const T* arr, int length) {
+        if (length < 0) {
+            throw std::out_of_range("ArraySequence: length < 0");
+        }
+        
+        capacity = (length > 0) ? (2*length) : 1;
+        items = new DynamicArray<T>(capacity);
+        for (int i = 0; i < length; i++) {
+            items->Set(i, arr[i]);
+        }
+        count = length;
     }
 
     ArraySequence(const ArraySequence<T>& other) {
+        capacity = other.capacity;
+        count = other.count;
         items = new DynamicArray<T>(*other.items);
     }
 
@@ -55,84 +41,92 @@ public:
     }
 
     virtual T GetFirst() const override {
-        if (items->GetSize() == 0) {
-            throw std::out_of_range("ArraySequence::GetFirst() - sequence is empty(upset)");
+        if (count == 0) {
+            throw std::out_of_range("ArraySequence::GetFirst: empty");
         }
         return items->Get(0);
     }
 
     virtual T GetLast() const override {
-        int size = items->GetSize();
-        if (size == 0) {
-            throw std::out_of_range("ArraySequence::GetLast() - sequence is empty(upset)");
+        if (count == 0) {
+            throw std::out_of_range("ArraySequence::GetLast: empty");
         }
-        return items->Get(size - 1);
+        return items->Get(count - 1);
     }
 
     virtual T Get(int index) const override {
+        if (index < 0 || index >= count) {
+            throw std::out_of_range("ArraySequence::Get: out of range");
+        }
         return items->Get(index);
     }
 
     virtual int GetLength() const override {
-        return items->GetSize();
+        return count;
     }
 
     virtual Sequence<T>* GetSubsequence(int startIndex, int endIndex) const override {
-        if (startIndex < 0 || endIndex < 0 || startIndex > endIndex ||
-            endIndex >= items->GetSize()) {
-            throw std::out_of_range("ArraySequence::GetSubsequence() - index out of range(unluck)");
+        if (startIndex < 0 || endIndex < 0 || startIndex > endIndex || endIndex >= count) {
+            throw std::out_of_range("ArraySequence::GetSubsequence: out of range");
         }
-        int newSize = endIndex - startIndex + 1;
-        auto* subArr = new T[newSize];
-        for (int i = 0; i < newSize; i++) {
-            subArr[i] = items->Get(startIndex + i);
+        int newLen = endIndex - startIndex + 1;
+        T* temp = new T[newLen];
+        for (int i = 0; i < newLen; i++) {
+            temp[i] = items->Get(startIndex + i);
         }
-        ArraySequence<T>* result = new ArraySequence<T>(subArr, newSize);
-        delete[] subArr;
+        ArraySequence<T>* result = new ArraySequence<T>(temp, newLen);
+        delete[] temp;
         return result;
     }
 
     virtual Sequence<T>* Append(const T& item) override {
-        items->Resize(items->GetSize() + 1);
-        items->Set(items->GetSize() - 1, item);
+        if (count == capacity) {
+            int newCap = capacity * 2;
+            items->Resize(newCap);
+            capacity = newCap;
+        }
+        items->Set(count, item);
+        count++;
         return this;
     }
 
     virtual Sequence<T>* Prepend(const T& item) override {
-        items->Resize(items->GetSize() + 1);
-        for (int i = items->GetSize() - 1; i > 0; i--) {
+        if (count == capacity) {
+            int newCap = capacity * 2;
+            items->Resize(newCap);
+            capacity = newCap;
+        }
+        for (int i = count; i > 0; i--) {
             items->Set(i, items->Get(i - 1));
         }
         items->Set(0, item);
+        count++;
         return this;
     }
 
     virtual Sequence<T>* InsertAt(const T& item, int index) override {
-        if (index < 0 || index > items->GetSize()) {
-            throw std::out_of_range("ArraySequence::InsertAt() - index out of range(unluck)");
+        if (index < 0 || index > count) {
+            throw std::out_of_range("ArraySequence::InsertAt: out of range");
         }
-        items->Resize(items->GetSize() + 1);
-        for (int i = items->GetSize() - 1; i > index; i--) {
+        if (count == capacity) {
+            int newCap = capacity * 2;
+            items->Resize(newCap);
+            capacity = newCap;
+        }
+        for (int i = count; i > index; i--) {
             items->Set(i, items->Get(i - 1));
         }
         items->Set(index, item);
+        count++;
         return this;
     }
 
     virtual Sequence<T>* Concat(const Sequence<T>* seq) const override {
-        int size1 = this->GetLength();
-        int size2 = seq->GetLength();
-        int newSize = size1 + size2;
-        T* newArr = new T[newSize];
-        for (int i = 0; i < size1; i++) {
-            newArr[i] = items->Get(i);
+        ArraySequence<T>* newSeq = new ArraySequence<T>(*this);
+        for (int i = 0; i < seq->GetLength(); i++) {
+            newSeq->Append(seq->Get(i));
         }
-        for (int i = 0; i < size2; i++) {
-            newArr[size1 + i] = seq->Get(i);
-        }
-        ArraySequence<T>* result = new ArraySequence<T>(newArr, newSize);
-        delete[] newArr;
-        return result;
+        return newSeq;
     }
 
     virtual Sequence<T>* Clone() const override {
