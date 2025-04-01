@@ -7,6 +7,19 @@ class ListSequence : public Sequence<T> {
 protected:
     LinkedList<T>* list;
 
+    // для immutable
+    static void AppendHelper(LinkedList<T>& arr, const T& item) {
+        list->Append(item);
+    }
+
+    static void PrependHelper(LinkedList<T>& arr, const T& item) {
+        list->Prepend(item);
+    }
+
+    static void InsertAtHelper(LinkedList<T>& arr, const T& item, int index) {
+        list->InsertAt(item, index);
+    }
+
 public:
     ListSequence() {
         list = new LinkedList<T>();

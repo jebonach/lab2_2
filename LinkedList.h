@@ -151,6 +151,7 @@ public:
         Node* current = list->head;
         while (current) {
             result->Append(current->data);
+            // сделать o(1)
             current = current->next;
         }
         return result;

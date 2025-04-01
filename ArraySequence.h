@@ -7,6 +7,32 @@ class ArraySequence : public Sequence<T> {
 protected:
     DynamicArray<T>* items;
 
+    //для immutable
+    static void AppendHelper(DynamicArray<T>& arr, const T& item) {
+        arr.Resize(arr.GetSize() + 1);
+        arr.Set(arr.GetSize() - 1, item);
+    }
+
+    static void PrependHelper(DynamicArray<T>& arr, const T& item) {
+        arr.Resize(arr.GetSize() + 1);
+        for (int i = arr.GetSize() - 1; i > 0; i--) {
+            arr.Set(i, arr.Get(i - 1));
+        }
+        arr.Set(0, item);
+    } 
+
+    static void InsertAtHelper(DynamicArray<T>& arr, const T& item, int index) {
+        if (index < 0 || index > arr.GetSize()) {
+            throw std::out_of_range("InsertAtHelper - index out of range");
+        }
+        arr.Resize(arr.GetSize() + 1);
+        for (int i = arr.GetSize() - 1; i > index; i--) {
+            arr.Set(i, arr.Get(i - 1));
+        }
+        arr.Set(index, item);
+    }
+
+
 public:
     ArraySequence() {
         items = new DynamicArray<T>(0);

@@ -3,13 +3,15 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
 
 all: tests lab2
 	@clear
+	@cowsay -f hellokitty "гениальная лаба компилится, пока представьте как ставите за нее отл"
 	@./tests
+	@cowsay -f ren "Она даже тесты прошла, это точно отл"
 	@./lab2
+	@cowsay -f dragon "гениальная лаба"
 
 ui: lab2
 	@clear
 	@./lab2
-
 tests: tests.o
 	@clear
 	@$(CXX) $(CXXFLAGS) tests.o -o tests
