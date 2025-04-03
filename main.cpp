@@ -11,5 +11,4 @@ int main() {
 arraysequence - capacity
 concat за o(1)
 где-то лишние деструкторы (в arraysequence listsequence)
-где-то копируются методы просто так (listsequence::GetSubsequence)
 */

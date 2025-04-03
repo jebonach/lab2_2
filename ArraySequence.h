@@ -37,7 +37,7 @@ public:
     }
 
     virtual ~ArraySequence() {
-        delete items;
+        delete items, count, capacity;
     }
 
     virtual T GetFirst() const override {
