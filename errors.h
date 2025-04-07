@@ -1,4 +1,4 @@
 #pragma once
-#include <exception>
+#include "how_to_train_your_exception.h"
 
-void handleException(const std::exception &e);
+void handleException(const MyException &e);

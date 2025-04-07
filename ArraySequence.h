@@ -2,6 +2,7 @@
 #include "DynamicArray.h"
 #include "Sequence.h"
 #include <stdexcept>
+#include "how_to_train_your_exception.h"
 
 template <class T>
 class ArraySequence : public Sequence<T> {
@@ -19,7 +20,7 @@ public:
 
     ArraySequence(const T* arr, int length) {
         if (length < 0) {
-            throw std::out_of_range("ArraySequence: length < 0");
+            throw MyException(ErrorType::NegativeSize, 0);
         }
         
         capacity = (length > 0) ? (2*length) : 1;
@@ -37,26 +38,29 @@ public:
     }
 
     virtual ~ArraySequence() {
-        delete items, count, capacity;
+        delete items;
     }
 
     virtual T GetFirst() const override {
-        if (count == 0) {
-            throw std::out_of_range("ArraySequence::GetFirst: empty");
+        if (items->GetSize() == 0) {
+            throw MyException(ErrorType::OutOfRange, 2);
         }
         return items->Get(0);
     }
 
     virtual T GetLast() const override {
         if (count == 0) {
-            throw std::out_of_range("ArraySequence::GetLast: empty");
+            throw MyException(ErrorType::OutOfRange, 2);
         }
         return items->Get(count - 1);
     }
 
     virtual T Get(int index) const override {
-        if (index < 0 || index >= count) {
-            throw std::out_of_range("ArraySequence::Get: out of range");
+        if (index < 0) {
+            throw MyException(ErrorType::OutOfRange, 0);
+        }
+        if (index >= count) {
+            throw MyException(ErrorType::OutOfRange, 1);
         }
         return items->Get(index);
     }
@@ -66,8 +70,11 @@ public:
     }
 
     virtual Sequence<T>* GetSubsequence(int startIndex, int endIndex) const override {
-        if (startIndex < 0 || endIndex < 0 || startIndex > endIndex || endIndex >= count) {
-            throw std::out_of_range("ArraySequence::GetSubsequence: out of range");
+        if (startIndex < 0) {
+            throw MyException(ErrorType::OutOfRange, 0); // code=0 => "index < 0?"
+        }
+        if (endIndex < 0 || startIndex > endIndex || endIndex >= count) {
+            throw MyException(ErrorType::OutOfRange, 1); // code=1 => "index >= size"
         }
         int newLen = endIndex - startIndex + 1;
         T* temp = new T[newLen];
@@ -105,8 +112,11 @@ public:
     }
 
     virtual Sequence<T>* InsertAt(const T& item, int index) override {
-        if (index < 0 || index > count) {
-            throw std::out_of_range("ArraySequence::InsertAt: out of range");
+        if (index < 0) {
+            throw MyException(ErrorType::OutOfRange, 0);
+        }
+        if (index >= count) {
+            throw MyException(ErrorType::OutOfRange, 1);
         }
         if (count == capacity) {
             int newCap = capacity * 2;

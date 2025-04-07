@@ -45,9 +45,11 @@ public:
     }
 
     virtual Sequence<T>* GetSubsequence(int startIndex, int endIndex) const override {
-        if (startIndex < 0 || endIndex < 0 || startIndex > endIndex ||
-            endIndex >= list->GetLength()) {
-            throw std::out_of_range("ListSequence::GetSubsequence() - index out of range");
+        if (startIndex < 0 || endIndex < 0 ) {
+            throw MyException(ErrorType::OutOfRange, 0);
+        }
+        if (startIndex > endIndex || endIndex >= list->GetLength()) {
+            throw MyException(ErrorType::OutOfRange, 1);
         }
         LinkedList<T>* subList = list->GetSubList(startIndex, endIndex);
         ListSequence<T>* result = new ListSequence<T>();

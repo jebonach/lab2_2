@@ -1,6 +1,7 @@
 #pragma once
 #include <stdexcept>
 #include <initializer_list>
+#include "how_to_train_your_exception.h"
 
 template <class T>
 class LinkedList {
@@ -10,7 +11,6 @@ private:
         Node* next;
         Node(const T& value) : data(value), next(nullptr) {}
     };
-
     Node* head;
     Node* tail;
     int length;
@@ -19,9 +19,9 @@ public:
     LinkedList() : head(nullptr), tail(nullptr), length(0) {}
 
     LinkedList(T* items, int count) : LinkedList() {
-        if (count < 0) {
-            throw std::out_of_range("LinkedList::count < 0");
-        }
+        // if (size < 0) {
+        //     throw MyException(ErrorType::OutOfRange, 3);
+        // }
         for (int i = 0; i < count; i++) {
             Append(items[i]);
         }
@@ -58,21 +58,24 @@ public:
 
     T GetFirst() const {
         if (length == 0) {
-            throw std::out_of_range("LinkedList::GetFirst() - list is empty(upset)");
+            throw MyException(ErrorType::OutOfRange, 3);
         }
         return head->data;
     }
 
     T GetLast() const {
         if (length == 0) {
-            throw std::out_of_range("LinkedList::GetLast() - list is empty(upset)");
+            throw MyException(ErrorType::OutOfRange, 3);
         }
         return tail->data;
     }
 
     T Get(int index) const {
-        if (index < 0 || index >= length) {
-            throw std::out_of_range("LinkedList::Get() - index out of range(unluck)");
+        if (index < 0) {
+            throw MyException(ErrorType::OutOfRange, 0);
+        }
+        if (index >= length) {
+            throw MyException(ErrorType::OutOfRange, 1);
         }
         Node* current = head;
         for (int i = 0; i < index; i++) {
@@ -82,8 +85,11 @@ public:
     }
 
     LinkedList<T>* GetSubList(int startIndex, int endIndex) const {
-        if (startIndex < 0 || endIndex < 0 || startIndex >= length || endIndex >= length || startIndex > endIndex) {
-            throw std::out_of_range("LinkedList::GetSubList() - index out of range(unluck)");
+        if (startIndex < 0) {
+            throw MyException(ErrorType::OutOfRange, 0);
+        }
+        if (endIndex < 0 || startIndex >= length || endIndex >= length || startIndex > endIndex) {
+            throw MyException(ErrorType::OutOfRange, 1);
         }
         LinkedList<T>* subList = new LinkedList<T>();
         Node* current = head;
@@ -124,8 +130,11 @@ public:
     }
 
     void InsertAt(const T& item, int index) {
-        if (index < 0 || index > length) {
-            throw std::out_of_range("LinkedList::InsertAt() - index out of range(unluck)");
+        if (index < 0) {
+            throw MyException(ErrorType::OutOfRange, 0);
+        }
+        if (index >= length) {
+            throw MyException(ErrorType::OutOfRange, 1);
         }
         if (index == 0) {
             Prepend(item);

@@ -1,5 +1,6 @@
 #pragma once
 #include <stdexcept>
+#include "how_to_train_your_exception.h"
 
 template <class T>
 class DynamicArray {
@@ -10,7 +11,7 @@ private:
 public:
     DynamicArray(const T* items, int count) {
         if (count < 0) {
-            throw std::out_of_range("DynamicArray: count < 0");
+            throw MyException(ErrorType::NegativeSize, 0);
         }
         size = count;
         data = new T[size];
@@ -21,7 +22,7 @@ public:
 
     DynamicArray(int size) {
         if (size < 0) {
-            throw std::out_of_range("DynamicArray: size < 0");
+            throw MyException(ErrorType::NegativeSize, 0);
         }
         this->size = size;
         data = new T[size];
@@ -47,22 +48,28 @@ public:
     }
 
     T Get(int index) const {
-        if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::Get out of range");
+        if (index < 0) {
+            throw MyException(ErrorType::OutOfRange, 0); // code=0 => "index < 0?"
+        }
+        if (index >= size) {
+            throw MyException(ErrorType::OutOfRange, 1); // code=1 => "index >= size"
         }
         return data[index];
     }
 
     void Set(int index, const T& value) {
-        if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::Set out of range");
+        if (index < 0) {
+            throw MyException(ErrorType::OutOfRange, 0);
+        }
+        if (index >= size) {
+            throw MyException(ErrorType::OutOfRange, 1);
         }
         data[index] = value;
     }
 
     void Resize(int newSize) {
         if (newSize < 0) {
-            throw std::out_of_range("DynamicArray::Resize newSize < 0");
+            throw MyException(ErrorType::OutOfRange, 0);
         }
         T* newData = new T[newSize];
         int minSize = (newSize < size) ? newSize : size;
@@ -90,14 +97,20 @@ public:
     }
 
     T& operator[](int index) {
-        if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::operator[] out of range");
+        if (index < 0) {
+            throw MyException(ErrorType::OutOfRange, 0); // code=0 => "index < 0?"
+        }
+        if (index >= size) {
+            throw MyException(ErrorType::OutOfRange, 1); // code=1 => "index >= size"
         }
         return data[index];
     }
     const T& operator[](int index) const {
-        if (index < 0 || index >= size) {
-            throw std::out_of_range("DynamicArray::operator[] out of range");
+        if (index < 0) {
+            throw MyException(ErrorType::OutOfRange, 0); // code=0 => "index < 0?"
+        }
+        if (index >= size) {
+            throw MyException(ErrorType::OutOfRange, 1); // code=1 => "index >= size"
         }
         return data[index];
     }

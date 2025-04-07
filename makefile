@@ -3,10 +3,8 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic -g
 
 all: tests lab2
 	@clear
-	@cowsay -f hellokitty "гениальная лаба компилится, пока можете представить, как ставите за нее отл"
 	@./tests
 	@./lab2
-	@cowsay -f dragon "гениальная лаба"
 
 ui: lab2
 	@clear
