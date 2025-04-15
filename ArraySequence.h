@@ -97,6 +97,23 @@ public:
         return this;
     }
 
+    virtual const char* TypeName() const override {
+        return "ArraySequence";
+    }
+    
+    virtual Sequence<T>* RemoveAt(int index) override {
+        if (index < 0 || index >= count) {
+            throw MyException(ErrorType::OutOfRange, 1);
+        }
+        for (int i = index; i < count-1; i++) {
+            items->Set(i, items->Get(i+1));
+        }
+        
+        count--;
+        return this;
+    }
+    
+
     virtual Sequence<T>* Prepend(const T& item) override {
         if (count == capacity) {
             int newCap = capacity * 2;

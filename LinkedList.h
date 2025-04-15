@@ -118,6 +118,36 @@ public:
         length++;
     }
 
+    void RemoveAt(int index) {
+        if (index < 0) {
+            throw MyException(ErrorType::OutOfRange, 2);
+        }
+        if (index >= length) {
+            throw MyException(ErrorType::OutOfRange, 3);
+        }
+        if (index == 0) {
+            Node* temp = head;
+            head = head->next;
+            delete temp;
+            length--;
+            if (length == 0) {
+                tail = nullptr;
+            }
+            return;
+        }
+        Node* current = head;
+        for (int i=0; i<index-1; i++) {
+            current = current->next;
+        }
+        Node* toDel = current->next;
+        current->next = toDel->next;
+        delete toDel;
+        length--;
+        if (index == length) { 
+            tail = current;
+        }
+    }
+    
     void Prepend(const T& item) {
         Node* newNode = new Node(item);
         if (length == 0) {

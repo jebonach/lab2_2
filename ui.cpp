@@ -21,6 +21,7 @@ static void handleSubsequence(std::vector<Sequence<int>*>& seqs);
 static void handleConcat(std::vector<Sequence<int>*>& seqs);
 static void handleZip(std::vector<Sequence<int>*>& seqs);
 static void handleUnzip(std::vector<Sequence<int>*>& seqs);
+static void handleRemoveItem(std::vector<Sequence<int>*>& seqs);
 
 void runUI() {
     std::vector<Sequence<int>*> seqs;
@@ -37,6 +38,7 @@ void runUI() {
                       << "6) Concat\n"
                       << "7) zip\n"
                       << "8) Unzip\n"
+                      << "9) Remove item\n"
                       << "0) Exit\n"
                       << "Choose: ";
 
@@ -72,6 +74,9 @@ void runUI() {
                 break;
             case 8:
                 handleUnzip(seqs);
+                break;
+            case 9:
+                handleRemoveItem(seqs);
                 break;
             case 0:
                 running = false;
@@ -214,9 +219,9 @@ static void handlePrintAll(const std::vector<Sequence<int>*>& seqs) {
     }
     for (int i = 0; i < (int)seqs.size(); i++) {
         auto* seq = seqs[i];
-        int len = seq->GetLength();
-        std::cout << "Seq #" << i << " (len=" << len << "): ";
-        for (int j = 0; j < len; j++) {
+        std::cout << "Seq #" << i << " (" << seq->TypeName() 
+            << ", len=" << seq->GetLength() << "): ";
+        for (int j = 0; j < seq->GetLength(); j++) {
             std::cout << seq->Get(j) << " ";
         }
         std::cout << "\n";
@@ -356,3 +361,33 @@ static void handleUnzip(std::vector<Sequence<int>*>& seqs) {
     std::cout << "[OK] unzip => new IDs=" << (seqs.size()-2)
               << " and " << (seqs.size()-1) << "\n";
 }
+
+static void handleRemoveItem(std::vector<Sequence<int>*>& seqs) {
+    if (seqs.empty()) {
+        std::cout << "[Warn] No sequences.\n";
+        return;
+    }
+    std::cout << "Which sequence ID to remove item from? [0.." << (seqs.size()-1) << "]: ";
+    int id;
+    std::cin >> id;
+    if (!std::cin) {
+        std::cin.clear();
+        std::cin.ignore(10000,'\n');
+        throw MyException(ErrorType::InvalidArg, 1);
+    }
+    if (id < 0 || id >= (int)seqs.size()) {
+        throw MyException(ErrorType::OutOfRange, 1);
+    }
+
+    std::cout << "Index of element to remove: ";
+    int idx;
+    std::cin >> idx;
+    if (!std::cin) {
+        std::cin.clear();
+        std::cin.ignore(10000,'\n');
+        throw MyException(ErrorType::InvalidArg, 1);
+    }
+    seqs[id] = seqs[id]->RemoveAt(idx);
+    std::cout << "[OK] Removed item at index " << idx << " in seq #" << id << "\n";
+}
+

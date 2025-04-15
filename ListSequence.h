@@ -63,6 +63,15 @@ public:
         return this;
     }
 
+    virtual Sequence<T>* RemoveAt(int index) override {
+        list->RemoveAt(index);
+        return this;
+    }    
+
+    virtual const char* TypeName() const override {
+        return "ListSequence";
+    }
+
     virtual Sequence<T>* Prepend(const T& item) override {
         list->Prepend(item);
         return this;

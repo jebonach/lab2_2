@@ -98,19 +98,19 @@ public:
 
     T& operator[](int index) {
         if (index < 0) {
-            throw MyException(ErrorType::OutOfRange, 0); // code=0 => "index < 0?"
+            throw MyException(ErrorType::OutOfRange, 0);
         }
         if (index >= size) {
-            throw MyException(ErrorType::OutOfRange, 1); // code=1 => "index >= size"
+            throw MyException(ErrorType::OutOfRange, 1);
         }
         return data[index];
     }
     const T& operator[](int index) const {
         if (index < 0) {
-            throw MyException(ErrorType::OutOfRange, 0); // code=0 => "index < 0?"
+            throw MyException(ErrorType::OutOfRange, 0);
         }
         if (index >= size) {
-            throw MyException(ErrorType::OutOfRange, 1); // code=1 => "index >= size"
+            throw MyException(ErrorType::OutOfRange, 1);
         }
         return data[index];
     }
