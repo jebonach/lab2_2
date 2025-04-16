@@ -84,20 +84,25 @@ public:
 
     virtual Sequence<T>* Concat(const Sequence<T>* seq) const override {
         const ListSequence<T>* listSeq = dynamic_cast<const ListSequence<T>*>(seq);
-        if (listSeq) {
-            LinkedList<T>* concatList = list->Concat(listSeq->list);
-            ListSequence<T>* result = new ListSequence<T>();
-            delete result->list;
-            result->list = concatList;
-            return result;
-        } else {
-            ListSequence<T>* result = new ListSequence<T>(*this);
-            for (int i = 0; i < seq->GetLength(); i++) {
-                result->Append(seq->Get(i));
-            }
-            return result;
+        ListSequence<T>* result = new ListSequence<T>(*this);
+        for (int i = 0; i < seq->GetLength(); i++) {
+            result->Append(seq->Get(i));
         }
+        return result;
     }
+        // if (listSeq) {
+        //     LinkedList<T>* concatList = list->Concat(listSeq->list);
+        //     ListSequence<T>* result = new ListSequence<T>();
+        //     delete result->list;
+        //     result->list = concatList;
+        //     return result;conca
+        // } else {
+        //     ListSequence<T>* result = new ListSequence<T>(*this);
+        //     for (int i = 0; i < seq->GetLength(); i++) {
+        //         result->Append(seq->Get(i));
+        //     }
+        //     return result;
+        // }
 
     virtual Sequence<T>* Clone() const override {
         return new ListSequence<T>(*this);
