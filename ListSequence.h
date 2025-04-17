@@ -103,7 +103,10 @@ public:
         //     }
         //     return result;
         // }
-
+    void reverse() {
+        list->reverse();
+    }
+        
     virtual Sequence<T>* Clone() const override {
         return new ListSequence<T>(*this);
     }

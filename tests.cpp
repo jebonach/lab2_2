@@ -1,7 +1,20 @@
 #include <iostream>
 #include <cassert>
+#include "DynamicArray.h"
+#include "LinkedList.h"
 #include "ArraySequence.h"
 #include "ListSequence.h"
+
+template<class Seq>
+void checkEqual(const Seq* seq, std::initializer_list<int> ref)
+{
+    assert(seq->GetLength() == static_cast<int>(ref.size()));
+    int i = 0;
+    for (int v : ref) {
+        assert(seq->Get(i) == v);
+        ++i;
+    }
+}
 
 void TestDynamicArray() {
     int arr[] = {1, 2, 3};
@@ -82,12 +95,50 @@ void TestListSequence() {
     delete sub;
 }
 
+template<class Seq>
+void ReverseScenarios(const char* tag)
+{
+    std::cout << "  Reverse‑block for " << tag << '\n';
+
+    // 1) empty
+    {
+        Seq s;
+        s.reverse();
+        checkEqual(&s,{});
+    }
+    // 2) single element
+    {
+        Seq s;  s.Append(42);
+        s.reverse();
+        checkEqual(&s,{42});
+    }
+    // 3) two elements
+    {
+        Seq s;  s.Append(7)->Append(9);
+        s.reverse();
+        checkEqual(&s,{9,7});
+    }
+    // 4) odd count
+    {
+        Seq s; for (int v:{1,2,3,4,5}) s.Append(v);
+        s.reverse();
+        checkEqual(&s,{5,4,3,2,1});
+    }
+    // 5) even count
+    {
+        Seq s; for (int v:{10,20,30,40}) s.Append(v);
+        s.reverse();
+        checkEqual(&s,{40,30,20,10});
+    }
+}
+
 int main() {
     std::cout << "Running tests..." << std::endl;
     TestDynamicArray();
     TestLinkedList();
     TestArraySequence();
     TestListSequence();
+    ReverseScenarios<ListSequence<int>> ("ListSequence");
     std::cout << "All tests passed successfully!" << std::endl;
     return 0;
 }

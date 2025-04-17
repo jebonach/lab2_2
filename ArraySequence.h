@@ -156,6 +156,15 @@ public:
         return newSeq;
     }
 
+    void Reverse() {
+        int n = count;
+        for (int i = 0; i < n/2; ++i) {
+            T tmp = items->Get(i);
+            items->Set(i, items->Get(n-1-i));
+            items->Set(n-1-i, tmp);
+        }
+    }
+    
     virtual Sequence<T>* Clone() const override {
         return new ArraySequence<T>(*this);
     }

@@ -205,7 +205,22 @@ public:
 
         return this;
     }
-    
+
+    void reverse() {
+        if (length == 0 || head == nullptr) {
+            return;
+        }
+        Node* prev = nullptr;
+        Node* curr = head;
+        while (curr) {
+            Node* next = curr->next;
+            curr->next = prev;
+            prev = curr;
+            curr = next;
+        }
+        head = prev;
+    }
+
     LinkedList<T>& operator=(const LinkedList<T>& other) {
         if (this != &other) {
             Clear();
