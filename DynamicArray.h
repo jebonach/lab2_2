@@ -47,6 +47,11 @@ public:
         return size;
     }
 
+    int GetLength() const {
+        return GetSize();
+    }
+
+
     T Get(int index) const {
         if (index < 0) {
             throw MyException(ErrorType::OutOfRange, 0); // code=0 => "index < 0?"

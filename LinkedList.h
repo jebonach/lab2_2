@@ -1,6 +1,7 @@
 #pragma once
 #include <stdexcept>
 #include <initializer_list>
+#include <unordered_set>
 #include "how_to_train_your_exception.h"
 
 template <class T>
@@ -15,13 +16,11 @@ private:
     Node* tail;
     int length;
 
+    template<class U> friend struct LLHook;
 public:
     LinkedList() : head(nullptr), tail(nullptr), length(0) {}
 
     LinkedList(T* items, int count) : LinkedList() {
-        // if (size < 0) {
-        //     throw MyException(ErrorType::OutOfRange, 3);
-        // }
         for (int i = 0; i < count; i++) {
             Append(items[i]);
         }
@@ -46,8 +45,10 @@ public:
     }
 
     void Clear() {
+        std::unordered_set<Node*> seen;
         Node* current = head;
-        while (current) {
+        while (current && !seen.count(current)) {
+            seen.insert(current);
             Node* temp = current;
             current = current->next;
             delete temp;
@@ -56,21 +57,35 @@ public:
         length = 0;
     }
 
-    T GetFirst() const {
+    T& GetFirst() {
         if (length == 0) {
             throw MyException(ErrorType::OutOfRange, 3);
         }
         return head->data;
     }
 
-    T GetLast() const {
+    const T& GetFirst() const {
+        if (length == 0) {
+            throw MyException(ErrorType::OutOfRange, 3);
+        }
+        return head->data;
+    }
+
+    T& GetLast() {
         if (length == 0) {
             throw MyException(ErrorType::OutOfRange, 3);
         }
         return tail->data;
     }
 
-    T Get(int index) const {
+    const T& GetLast() const {
+        if (length == 0) {
+            throw MyException(ErrorType::OutOfRange, 3);
+        }
+        return tail->data;
+    }
+
+    T& Get(int index) {
         if (index < 0) {
             throw MyException(ErrorType::OutOfRange, 0);
         }
@@ -82,6 +97,10 @@ public:
             current = current->next;
         }
         return current->data;
+    }
+
+    const T& Get(int index) const {
+        return const_cast<LinkedList*>(this)->Get(index);
     }
 
     LinkedList<T>* GetSubList(int startIndex, int endIndex) const {
@@ -136,18 +155,18 @@ public:
             return;
         }
         Node* current = head;
-        for (int i=0; i<index-1; i++) {
+        for (int i = 0; i < index - 1; i++) {
             current = current->next;
         }
         Node* toDel = current->next;
         current->next = toDel->next;
         delete toDel;
         length--;
-        if (index == length) { 
+        if (index == length) {
             tail = current;
         }
     }
-    
+
     void Prepend(const T& item) {
         Node* newNode = new Node(item);
         if (length == 0) {
@@ -173,9 +192,7 @@ public:
             Append(item);
             return;
         }
-
         Node* newNode = new Node(item);
-
         Node* current = head;
         for (int i = 0; i < index - 1; i++) {
             current = current->next;
@@ -198,18 +215,13 @@ public:
             this->tail = list->tail;
             this->length += list->length;
         }
-        
         list->head = nullptr;
         list->tail = nullptr;
         list->length = 0;
-
         return this;
     }
 
     void reverse() {
-        if (length == 0 || head == nullptr) {
-            return;
-        }
         Node* prev = nullptr;
         Node* curr = head;
         while (curr) {
@@ -219,7 +231,76 @@ public:
             curr = next;
         }
         head = prev;
+        tail = head;
+        if (tail) {
+            while (tail->next) {
+                tail = tail->next;
+            }
+        }
     }
+
+    void MakeCycle(int idx) {
+        if (idx < 0 || idx >= length || length == 0) {
+            return;
+        }
+        Node* cycleStart = head;
+        for (int i = 0; i < idx; ++i) {
+            cycleStart = cycleStart->next;
+        }
+        tail->next = cycleStart;
+    }
+
+    void ReverseSmart() {
+        if (length < 2) {
+            return;
+        }
+        Node* slow = head;
+        Node* fast = head;
+        bool hasCycle = false;
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+            if (slow == fast) {
+                hasCycle = true;
+                break;
+            }
+        }
+        if (!hasCycle) {
+            reverse();
+            return;
+        }
+        Node* meet = slow;
+        Node* last = meet;
+        while (last->next != meet) {
+            last = last->next;
+        }
+        last->next = nullptr;
+        tail = last;
+        reverse();
+        tail->next = head;
+    }
+
+    void makeCycle() {
+        MakeCycle(0);
+    }
+
+    void smartReverse() {
+        ReverseSmart();
+    }
+
+    T& Next(const T& value){
+        Node* p = head;
+        for (int i = 0; i < length; ++i) {
+            if (p->data == value) {
+                if (!p->next)
+                    throw MyException(ErrorType::OutOfRange,3);
+                return p->next->data;
+            }
+            p = p->next;
+        }
+        throw MyException(ErrorType::InvalidArg,6);
+    }
+
 
     LinkedList<T>& operator=(const LinkedList<T>& other) {
         if (this != &other) {

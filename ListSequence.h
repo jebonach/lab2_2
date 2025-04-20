@@ -6,7 +6,6 @@ template <class T>
 class ListSequence : public Sequence<T> {
 protected:
     LinkedList<T>* list;
-
 public:
     ListSequence() {
         list = new LinkedList<T>();
@@ -24,7 +23,7 @@ public:
         list = new LinkedList<T>(*other.list);
     }
 
-    virtual ~ListSequence() {
+    ~ListSequence() override {
         delete list;
     }
 
@@ -45,7 +44,7 @@ public:
     }
 
     virtual Sequence<T>* GetSubsequence(int startIndex, int endIndex) const override {
-        if (startIndex < 0 || endIndex < 0 ) {
+        if (startIndex < 0 || endIndex < 0) {
             throw MyException(ErrorType::OutOfRange, 0);
         }
         if (startIndex > endIndex || endIndex >= list->GetLength()) {
@@ -53,7 +52,7 @@ public:
         }
         LinkedList<T>* subList = list->GetSubList(startIndex, endIndex);
         ListSequence<T>* result = new ListSequence<T>();
-        delete result->list; 
+        delete result->list;
         result->list = subList;
         return result;
     }
@@ -66,7 +65,7 @@ public:
     virtual Sequence<T>* RemoveAt(int index) override {
         list->RemoveAt(index);
         return this;
-    }    
+    }
 
     virtual const char* TypeName() const override {
         return "ListSequence";
@@ -90,23 +89,19 @@ public:
         }
         return result;
     }
-        // if (listSeq) {
-        //     LinkedList<T>* concatList = list->Concat(listSeq->list);
-        //     ListSequence<T>* result = new ListSequence<T>();
-        //     delete result->list;
-        //     result->list = concatList;
-        //     return result;conca
-        // } else {
-        //     ListSequence<T>* result = new ListSequence<T>(*this);
-        //     for (int i = 0; i < seq->GetLength(); i++) {
-        //         result->Append(seq->Get(i));
-        //     }
-        //     return result;
-        // }
+
     void reverse() {
         list->reverse();
     }
-        
+
+    void ReverseSmart() {
+        list->ReverseSmart();
+    }
+
+    void smartReverse() {
+        list->ReverseSmart();
+    }
+
     virtual Sequence<T>* Clone() const override {
         return new ListSequence<T>(*this);
     }

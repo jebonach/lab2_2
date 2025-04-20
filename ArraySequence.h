@@ -10,7 +10,6 @@ private:
     DynamicArray<T>* items;
     int count;
     int capacity;
-
 public:
     ArraySequence() {
         capacity = 4;
@@ -22,8 +21,7 @@ public:
         if (length < 0) {
             throw MyException(ErrorType::NegativeSize, 0);
         }
-        
-        capacity = (length > 0) ? (2*length) : 1;
+        capacity = (length > 0) ? (2 * length) : 1;
         items = new DynamicArray<T>(capacity);
         for (int i = 0; i < length; i++) {
             items->Set(i, arr[i]);
@@ -71,10 +69,10 @@ public:
 
     virtual Sequence<T>* GetSubsequence(int startIndex, int endIndex) const override {
         if (startIndex < 0) {
-            throw MyException(ErrorType::OutOfRange, 0); // code=0 => "index < 0?"
+            throw MyException(ErrorType::OutOfRange, 0);
         }
         if (endIndex < 0 || startIndex > endIndex || endIndex >= count) {
-            throw MyException(ErrorType::OutOfRange, 1); // code=1 => "index >= size"
+            throw MyException(ErrorType::OutOfRange, 1);
         }
         int newLen = endIndex - startIndex + 1;
         T* temp = new T[newLen];
@@ -100,19 +98,17 @@ public:
     virtual const char* TypeName() const override {
         return "ArraySequence";
     }
-    
+
     virtual Sequence<T>* RemoveAt(int index) override {
         if (index < 0 || index >= count) {
             throw MyException(ErrorType::OutOfRange, 1);
         }
-        for (int i = index; i < count-1; i++) {
-            items->Set(i, items->Get(i+1));
+        for (int i = index; i < count - 1; i++) {
+            items->Set(i, items->Get(i + 1));
         }
-        
         count--;
         return this;
     }
-    
 
     virtual Sequence<T>* Prepend(const T& item) override {
         if (count == capacity) {
@@ -156,15 +152,19 @@ public:
         return newSeq;
     }
 
-    void Reverse() {
+    void reverse() {
         int n = count;
-        for (int i = 0; i < n/2; ++i) {
+        for (int i = 0; i < n / 2; ++i) {
             T tmp = items->Get(i);
-            items->Set(i, items->Get(n-1-i));
-            items->Set(n-1-i, tmp);
+            items->Set(i, items->Get(n - 1 - i));
+            items->Set(n - 1 - i, tmp);
         }
     }
-    
+
+    void smartReverse() {
+        reverse();
+    }
+
     virtual Sequence<T>* Clone() const override {
         return new ArraySequence<T>(*this);
     }
