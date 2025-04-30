@@ -32,3 +32,21 @@ public:
     virtual const char* TypeName() const = 0;
     virtual Queue<T>* Clone() const = 0;
 };
+
+class Student {
+    public:
+        std::string name;
+        int age;
+        double gpa;
+    
+        Student() : name(""), age(0), gpa(0.0) {}
+        Student(std::string name, int age, double gpa)
+            : name(std::move(name)), age(age), gpa(gpa) {}
+    
+        friend std::ostream& operator<<(std::ostream& os, const Student& s) {
+            return os << "Student(name=" << s.name << ", age=" << s.age << ", GPA=" << s.gpa << ")";
+        }
+        bool operator==(const Student& other) const {
+            return name == other.name && age == other.age && gpa == other.gpa;
+        }
+    };
