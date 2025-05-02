@@ -50,7 +50,6 @@ public:
         delete items;
     }
 
-    /*----------------------------- push ------------------------------*/
     void Enqueue(const T& value) override {
         if (count == items->GetSize())
             grow();
