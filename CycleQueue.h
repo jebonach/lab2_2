@@ -3,7 +3,7 @@
 #include "DynamicArray.h"
 #include "errors.h"
 
-template <class T>
+template<class T>
 class CircularArrayQueue : public Queue<T>
 {
 private:
@@ -11,39 +11,38 @@ private:
     std::size_t head;
     std::size_t tail;
     std::size_t count;
-    std::size_t capacity;
 
-    void grow() {
-        std::size_t newCap = capacity * 2;
+    void expand()
+    {
+        std::size_t oldCap = items->GetSize();
+        std::size_t newCap = oldCap * 2;
+
         auto* tmp = new DynamicArray<T>(newCap);
-
-        for (std::size_t i = 0; i < count; ++i) {
-            tmp->Set(i, items->Get((head + i) % capacity));
-        }
+        for (std::size_t i = 0; i < count; ++i)
+            tmp->Set(i, items->Get((head + i) % oldCap));
 
         delete items;
         items = tmp;
         head = 0;
         tail = count;
-        capacity = newCap;
     }
 
 public:
-    CircularArrayQueue(std::size_t initCap = 8)
-        : items(new DynamicArray<T>(initCap)),
+    explicit CircularArrayQueue(4)
+        : items(new DynamicArray<T>(4)),
           head(0),
           tail(0),
-          count(0),
-          capacity(initCap){}
+          count(0)
+    {}
 
     CircularArrayQueue(const CircularArrayQueue& other)
-        : items(new DynamicArray<T>(other.capacity)),
+        : items(new DynamicArray<T>(other.items->GetSize())),
           head(0),
           tail(0),
-          count(0),
-          capacity(other.capacity){
+          count(0)
+    {
         for (std::size_t i = 0; i < other.count; ++i) {
-            Enqueue(other.items->Get((other.head + i) % other.capacity));
+            Enqueue(other.items->Get((other.head + i) % other.items->GetSize()));
         }
     }
 
@@ -51,31 +50,29 @@ public:
         delete items;
     }
 
-    void Enqueue(const T& value) override{
-        if (count == capacity){
+    /*----------------------------- push ------------------------------*/
+    void Enqueue(const T& value) override {
+        if (count == items->GetSize())
             grow();
-        }
 
         items->Set(tail, value);
-        tail = (tail + 1) % capacity;
+        tail = (tail + 1) % items->GetSize();
         ++count;
     }
 
     T Dequeue() override {
-        if (IsEmpty()) {
+        if (IsEmpty())
             throw MyException(ErrorType::OutOfRange, 5);
-        }
 
         T front = items->Get(head);
-        head = (head + 1) % capacity;
-        --count;
+        head = (head + 1) % items->GetSize();
+        count++;
         return front;
     }
 
     T& GetFront() override {
-        if (IsEmpty()){
+        if (IsEmpty())
             throw MyException(ErrorType::OutOfRange, 5);
-        }
         return (*items)[head];
     }
 
@@ -83,23 +80,12 @@ public:
         return const_cast<CircularArrayQueue*>(this)->GetFront();
     }
 
-    T& GetRear() override {
-        if (IsEmpty()) {
-            throw MyException(ErrorType::OutOfRange, 5);
-        }
-        return (*items)[(tail + capacity - 1) % capacity];
-    }
-
-    const T& GetRear() const override {
-        return const_cast<CircularArrayQueue*>(this)->GetRear();
-    }
-
     bool IsEmpty() const override {
         return count == 0;
     }
 
     bool IsFull() const override {
-        return count == capacity;
+        return count == items->GetSize();
     }
 
     std::size_t Size() const override {
