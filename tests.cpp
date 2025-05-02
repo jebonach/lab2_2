@@ -110,41 +110,63 @@ void TestManyRepeats()
 {
     const int N = 10000;
     ListSequence<int> s;
-    for(int i=0;i<N;++i) s.Append(7);
-    assert(s.GetLength()==N);
+    for (int i = 0; i < N; ++i){
+        s.Append(7);
+    }
+    assert(s.GetLength() == N);
     s.reverse();
-    for(int i=0;i<N;++i) assert(s.Get(i)==7);
+    ListSequence<int> ref;
+    for (int i = 0; i < N; ++i){
+        ref.Append(7);
+    }
+    assert(s == ref);
 }
 
 template<class Seq>
 void TestReverseTwice()
 {
-    Seq s; for(int v:{1,2,3,4,5}) s.Append(v);
+    Seq s;
+    for (int v : {1,2,3,4,5}) {
+        s.Append(v);
+    }
     auto orig = s.Clone();
     s.reverse();
     s.reverse();
-    for(int i=0;i<s.GetLength();++i) {
-        assert(s.Get(i)==orig->Get(i));
-    }
+    assert(s == *orig);
     delete orig;
 }
 
 void TestCycleSmartReverse()
 {
-    LinkedList<int> cyc;
-    for(int v:{1,2,3,4}) cyc.Append(v);
-    cyc.makeCycle();
-
-    cyc.smartReverse();
-    std::vector<int> got;
-    int &cur = cyc.GetFirst();
-    got.push_back(cur);
-    for(int i=0;i<7;++i) {
-        got.push_back(cyc.Next(got.back()));
+    {
+        LinkedList<int> cyc;
+        for (int v : {1,2,3,4}) cyc.Append(v);
+        cyc.makeCycle();
+        cyc.smartReverse();
+        std::vector<int> got;
+        int& cur = cyc.GetFirst();
+        got.push_back(cur);
+        for (int i = 0; i < 7; ++i){
+            got.push_back(cyc.Next(got.back()));
+        }
+        std::vector<int> exp{4,3,2,1,4,3,2,1};
+        assert(got == exp);
     }
 
-    std::vector<int> exp{4,3,2,1,4,3,2,1};
-    assert(got==exp);
+    {
+        LinkedList<int> cyc;
+        for (int v : {1,2,3,4}) cyc.Append(v);
+        cyc.MakeCycle(1);
+        cyc.smartReverse();
+        std::vector<int> got;
+        int& cur = cyc.GetFirst();
+        got.push_back(cur);
+        for (int i = 0; i < 7; ++i){
+            got.push_back(cyc.Next(got.back()));
+        }
+        std::vector<int> exp{4,3,2,1,4,3,2,1};
+        assert(got == exp);
+    }
 }
 
 int main()

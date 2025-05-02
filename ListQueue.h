@@ -1,6 +1,6 @@
 #pragma once
 
-#include "queue.h"
+#include "Queue.h"
 #include "LinkedList.h"
 #include "errors.h"
 
@@ -45,17 +45,6 @@ public:
         return const_cast<ListQueue*>(this)->GetFront();
     }
 
-    T& GetRear() override {
-        if (IsEmpty())
-            throw MyException(ErrorType::OutOfRange, 5);
-
-        return list->GetLast();
-    }
-
-    const T& GetRear() const override {
-        return const_cast<ListQueue*>(this)->GetRear();
-    }
-
     bool IsEmpty() const override {
         return list->GetLength() == 0;
     }
@@ -74,13 +63,13 @@ public:
     }
 
     Queue<T>* Concat(const Queue<T>& other) const override {
-        auto* result = new ListQueue<T>(*this);
-
-        std::unique_ptr<Queue<T>> tmp(other.Clone());
-        while (!tmp->IsEmpty())
-            result->Enqueue(tmp->Dequeue());
-
-        return result;
+    auto* result = new ListQueue<T>(*this);
+   Queue<T>* tmp = other.Clone();
+    while (!tmp->IsEmpty()){
+        result->Enqueue(tmp->Dequeue());
+    }
+    delete tmp;
+    return result;
     }
 
     Queue<T>* Subqueue(std::size_t start, std::size_t end) const override {

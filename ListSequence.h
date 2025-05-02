@@ -61,7 +61,7 @@ public:
         list->Append(item);
         return this;
     }
-
+    
     virtual Sequence<T>* RemoveAt(int index) override {
         list->RemoveAt(index);
         return this;
@@ -82,7 +82,6 @@ public:
     }
 
     virtual Sequence<T>* Concat(const Sequence<T>* seq) const override {
-        const ListSequence<T>* listSeq = dynamic_cast<const ListSequence<T>*>(seq);
         ListSequence<T>* result = new ListSequence<T>(*this);
         for (int i = 0; i < seq->GetLength(); i++) {
             result->Append(seq->Get(i));

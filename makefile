@@ -1,34 +1,53 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic -g
 
-all: tests lab2
+SRC_COMMON = errors.cpp
+OBJ_COMMON = $(SRC_COMMON:.cpp=.o)
+
+SRC_APP = main.cpp ui.cpp
+OBJ_APP = $(SRC_APP:.cpp=.o)
+
+SRC_TEST = tests.cpp
+OBJ_TEST = $(SRC_TEST:.cpp=.o)
+
+all: tests lab3
 	@clear
 	@./tests
-	@./lab2
+	@./lab3
 
-ui: lab2
+ui: lab3
 	@clear
-	@./lab2
+	@./lab3
 
-tests: tests.o errors.o
+tests: $(OBJ_TEST) $(OBJ_COMMON)
 	@clear
-	@$(CXX) $(CXXFLAGS) tests.o errors.o -o tests
+	@$(CXX) $(CXXFLAGS) $^ -o $@
 	@./tests
 
-lab2: main.o ui.o errors.o
-	@$(CXX) $(CXXFLAGS) main.o ui.o errors.o -o lab2
+lab3: $(OBJ_APP) $(OBJ_COMMON)
+	@$(CXX) $(CXXFLAGS) $^ -o $@
 
 main.o: main.cpp ui.h
-	@$(CXX) $(CXXFLAGS) -c main.cpp
+	@$(CXX) $(CXXFLAGS) -c $<
 
-ui.o: ui.cpp ui.h ListSequence.h errors.h
-	@$(CXX) $(CXXFLAGS) -c ui.cpp
+ui.o: ui.cpp ui.h \
+      Sequence.h Queue.h \
+      ArraySequence.h ListSequence.h \
+      ArrayQueue.h  CycleQueue.h \
+      ArrayPQueue.h ListQueue.h ListPQueue.h \
+      errors.h
+	@$(CXX) $(CXXFLAGS) -c $<
 
-tests.o: tests.cpp DynamicArray.h LinkedList.h ArraySequence.h ListSequence.h Sequence.h errors.h
-	@$(CXX) $(CXXFLAGS) -c tests.cpp
+tests.o: tests.cpp \
+         DynamicArray.h LinkedList.h \
+         Sequence.h ArraySequence.h ListSequence.h \
+         Queue.h ArrayQueue.h  CycleQueue.h \
+         ArrayPQueue.h ListQueue.h ListPQueue.h \
+         errors.h
+	@$(CXX) $(CXXFLAGS) -c $<
 
 errors.o: errors.cpp errors.h how_to_train_your_exception.h
-	@$(CXX) $(CXXFLAGS) -c errors.cpp
+	@$(CXX) $(CXXFLAGS) -c $<
 
 clean:
-	@rm -f *.o lab2 tests
+	@rm -f *.o lab3 tests

@@ -43,7 +43,7 @@ public:
         delete[] data;
     }
 
-    int GetSize() const {
+    std::size_t GetSize() const {
         return size;
     }
 

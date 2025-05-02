@@ -1,5 +1,5 @@
 #pragma once
-#include "queue.h"
+#include "Queue.h"
 #include "DynamicArray.h"
 #include "errors.h"
 
@@ -12,15 +12,14 @@ private:
     std::size_t tail;
     std::size_t count;
 
-    void expand()
-    {
+    void grow() {
         std::size_t oldCap = items->GetSize();
         std::size_t newCap = oldCap * 2;
 
         auto* tmp = new DynamicArray<T>(newCap);
-        for (std::size_t i = 0; i < count; ++i)
+        for (std::size_t i = 0; i < count; ++i){
             tmp->Set(i, items->Get((head + i) % oldCap));
-
+        }
         delete items;
         items = tmp;
         head = 0;
@@ -28,12 +27,10 @@ private:
     }
 
 public:
-    explicit CircularArrayQueue(4)
-        : items(new DynamicArray<T>(4)),
-          head(0),
-          tail(0),
-          count(0)
-    {}
+    explicit CircularArrayQueue(std::size_t initCap = 8)
+        : items(new DynamicArray<T>(initCap)),
+          head(0), tail(0), count(0){}
+
 
     CircularArrayQueue(const CircularArrayQueue& other)
         : items(new DynamicArray<T>(other.items->GetSize())),
@@ -44,6 +41,7 @@ public:
         for (std::size_t i = 0; i < other.count; ++i) {
             Enqueue(other.items->Get((other.head + i) % other.items->GetSize()));
         }
+        count = other.count;
     }
 
     ~CircularArrayQueue() override {

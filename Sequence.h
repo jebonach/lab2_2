@@ -21,3 +21,16 @@ public:
     virtual Sequence<T>* Clone() const = 0;
     virtual ~Sequence() {}
 };
+
+template<class T>
+bool operator==(const Sequence<T>& a, const Sequence<T>& b){
+    if (a.GetLength() != b.GetLength()) return false;
+    for (int i = 0; i < a.GetLength(); ++i)
+        if (!(a.Get(i) == b.Get(i))) return false;
+    return true;
+}
+
+template<class T>
+bool operator!=(const Sequence<T>& a, const Sequence<T>& b){
+    return !(a == b);
+}

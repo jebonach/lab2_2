@@ -1,14 +1,12 @@
 #pragma once
 
-#include "queue.h"
+#include "Queue.h"
 #include "DynamicArray.h"
 #include "errors.h"
 #include <functional> 
 
-using Self = ArrayPQueueSorted<T, Compare>;
-
 template<class T, class Compare = std::less<T>>
-class ArrayPQueueSorted : public Queue<T>
+class ArrayPQueue : public Queue<T>
 {
 private:
     DynamicArray<T>* items;
@@ -16,18 +14,20 @@ private:
     Compare cmp;
 
 public:
-    explicit ArrayPQueueSorted(std::size_t initCap = 8,
+    using Self = ArrayPQueue<T, Compare>;
+    
+    explicit ArrayPQueue(std::size_t initCap = 8,
                                Compare comp = Compare{})
         : items(new DynamicArray<T>(initCap)),
           count(0),
           cmp(comp) {}
 
-    ArrayPQueueSorted(const ArrayPQueueSorted& other)
+    ArrayPQueue(const ArrayPQueue& other)
         : items(new DynamicArray<T>(*other.items)),
           count(other.count),
           cmp(other.cmp) {}
 
-    ~ArrayPQueueSorted() override { 
+    ~ArrayPQueue() override { 
         delete items;
     }
 
@@ -47,7 +47,7 @@ public:
         while (lo < hi)
         {
             std::size_t mid = (lo + hi) / 2;
-            if (higher(value, items->Get(mid)))
+            if (cmp(value, items->Get(mid)))
                 hi = mid;
             else
                 lo = mid + 1;
@@ -100,7 +100,7 @@ public:
     }
 
     const char* TypeName() const override {
-        return "ArrayPQueueSorted";
+        return "ArrayPQueue";
     }
 
     Queue<T>* Clone() const override {

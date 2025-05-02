@@ -82,8 +82,8 @@ public:
     }
 
     virtual Sequence<T>* Append(const T& item) override {
-        if (count == items->Size) {
-            items->Resize(items->Size * 2);
+        if (count == items->Size()) {
+            items->Resize(items->Size() * 2);
         }
         items->Set(count, item);
         count++;
@@ -106,8 +106,8 @@ public:
     }
 
     virtual Sequence<T>* Prepend(const T& item) override {
-        if (count == items->Size) {
-            items->Resize(items->Size * 2);
+        if (count == items->Size()) {
+            items->Resize(items->Size() * 2);
         }
         for (int i = count; i > 0; i--) {
             items->Set(i, items->Get(i - 1));
@@ -124,8 +124,8 @@ public:
         if (index >= count) {
             throw MyException(ErrorType::OutOfRange, 1);
         }
-        if (count == items->Size) {
-            items->Resize(items->Size * 2);
+        if (count == items->Size()) {
+            items->Resize(items->Size() * 2);
         }
         for (int i = count; i > index; i--) {
             items->Set(i, items->Get(i - 1));

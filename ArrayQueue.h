@@ -1,5 +1,5 @@
 #pragma once
-#include "queue.h"
+#include "Queue.h"
 #include "DynamicArray.h"
 #include "errors.h"
 

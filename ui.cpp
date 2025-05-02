@@ -8,386 +8,211 @@
 #include "ImmutableArraySequence.h"
 #include "ImmutableListSequence.h"
 
-#include "how_to_train_your_exception.h"
+#include "Queue.h"
+#include "ArrayQueue.h"
+#include "CycleQueue.h"
+#include "ArrayPQueue.h"
+#include "ListQueue.h"
+#include "ListPQueue.h"
+
 #include "errors.h"
+#include "how_to_train_your_exception.h"
 
-#include "sequence_ops.h"
+struct Item
+{
+    bool isSeq;
+    Sequence<int>* seq;
+    Queue<int>*    que;
 
-static void handleCreate(std::vector<Sequence<int>*>& seqs);
-static void handleAppend(std::vector<Sequence<int>*>& seqs);
-static void handlePrintAll(const std::vector<Sequence<int>*>& seqs);
-static void handleRemoveSequence(std::vector<Sequence<int>*>& seqs);
-static void handleSubsequence(std::vector<Sequence<int>*>& seqs);
-static void handleConcat(std::vector<Sequence<int>*>& seqs);
-static void handleZip(std::vector<Sequence<int>*>& seqs);
-static void handleUnzip(std::vector<Sequence<int>*>& seqs);
-static void handleRemoveItem(std::vector<Sequence<int>*>& seqs);
+    Item(Sequence<int>* s):isSeq(true), seq(s), que(nullptr){}
+    Item(Queue<int>* q):isSeq(false),seq(nullptr), que(q){}
+};
 
-void runUI() {
-    std::vector<Sequence<int>*> seqs;
-    bool running = true;
+static void createObj (std::vector<Item>&);
+static void appendObj (std::vector<Item>&);
+static void printAll  (const std::vector<Item>&);
+static void removeObj (std::vector<Item>&);
 
-    while (running) {
-        try {
-            std::cout << "\n==== MENU ====\n"
-                      << "1) Create sequence\n"
-                      << "2) Append\n"
-                      << "3) Print ALL\n"
-                      << "4) Remove sequence\n"
-                      << "5) Subsequence\n"
-                      << "6) Concat\n"
-                      << "7) zip\n"
-                      << "8) Unzip\n"
-                      << "9) Remove item\n"
-                      << "0) Exit\n"
-                      << "Choose: ";
+static void subseqObj (std::vector<Item>&);
+static void concatObj (std::vector<Item>&);
+static void removeItm (std::vector<Item>&);
 
-            int cmd;
-            std::cin >> cmd;
-            if (!std::cin) {
-                std::cin.clear();
-                std::cin.ignore(10000,'\n');
-                throw MyException(ErrorType::InvalidArg, 0);
-            }
+static int  askID     (const std::vector<Item>&,const char* prompt);
 
-            switch (cmd) {
-            case 1:
-                handleCreate(seqs);
-                break;
-            case 2:
-                handleAppend(seqs);
-                break;
-            case 3:
-                handlePrintAll(seqs);
-                break;
-            case 4:
-                handleRemoveSequence(seqs);
-                break;
-            case 5:
-                handleSubsequence(seqs);
-                break;
-            case 6:
-                handleConcat(seqs);
-                break;
-            case 7:
-                handleZip(seqs);
-                break;
-            case 8:
-                handleUnzip(seqs);
-                break;
-            case 9:
-                handleRemoveItem(seqs);
-                break;
-            case 0:
-                running = false;
-                break;
-            default:
-                std::cout << "[Warn] Unknown command.\n";
+/* ================ MAIN LOOP ================= */
+void runUI()
+{
+    std::vector<Item> objs;
+    bool run = true;
+
+    while(run)
+    {
+        try{
+            std::cout<<"\n=== MENU ===\n"
+                     <<"1) Create sequence / queue\n"
+                     <<"2) Append / Enqueue\n"
+                     <<"3) Print ALL\n"
+                     <<"4) Remove object\n"
+                     <<"5) Subsequence (seq)\n"
+                     <<"6) Concat      (seq)\n"
+                     <<"7) Remove item / Dequeue\n"
+                     <<"0) Exit\nChoose: ";
+
+            int cmd; std::cin>>cmd;
+            if(!std::cin){ std::cin.clear(); std::cin.ignore(10000,'\n');
+                           throw MyException(ErrorType::InvalidArg,0);}
+            switch(cmd){
+            case 1: createObj(objs); break;
+            case 2: appendObj(objs); break;
+            case 3: printAll(objs);  break;
+            case 4: removeObj(objs); break;
+            case 5: subseqObj(objs); break;
+            case 6: concatObj(objs); break;
+            case 7: removeItm(objs); break;
+            case 0: run=false; break;
+            default: std::cout<<"Unknown\n";
             }
         }
-        catch (const MyException &ex) {
-            handleException(ex);
+        catch(const MyException& ex){ handleException(ex); }
+    }
+
+    for(auto& it:objs) if(it.isSeq) delete it.seq; else delete it.que;
+    std::cout<<"Program finished.\n";
+}
+
+/* ============ создание ===================== */
+static void createSeq(std::vector<Item>& v);
+static void createQue(std::vector<Item>& v);
+
+static void createObj(std::vector<Item>& v)
+{
+    std::cout<<"(1)Sequence  (2)Queue : ";
+    int t; std::cin>>t;
+    if(t==1) createSeq(v);
+    else if(t==2) createQue(v);
+    else throw MyException(ErrorType::OutOfRange,3);
+}
+static void createSeq(std::vector<Item>& v)
+{
+    std::cout<<"Seq type: 1)Array 2)List 3)ImmArray 4)ImmList : ";
+    int c; std::cin>>c;
+    Sequence<int>* s=nullptr;
+    if(c==1) s=new ArraySequence<int>;
+    else if(c==2) s=new ListSequence<int>;
+    else if(c==3){ int n; std::cout<<"size="; std::cin>>n;
+                   auto* buf=new int[n]; for(int i=0;i<n;++i) std::cin>>buf[i];
+                   s=new ImmutableArraySequence<int>(buf,n); delete[]buf; }
+    else if(c==4){ int n; std::cout<<"size="; std::cin>>n;
+                   auto* buf=new int[n]; for(int i=0;i<n;++i) std::cin>>buf[i];
+                   s=new ImmutableListSequence<int>(buf,n); delete[]buf; }
+    else throw MyException(ErrorType::OutOfRange,3);
+
+    v.emplace_back(s);
+    std::cout<<"[OK] created seq ID="<<v.size()-1<<"\n";
+}
+static void createQue(std::vector<Item>& v)
+{
+    std::cout<<"Queue: 1)ArrayQ 2)Circular 3)ArrayP 4)ListQ 5)ListP : ";
+    int c; std::cin>>c;
+    Queue<int>* q=nullptr;
+    switch(c){
+      case 1: q=new ArrayQueue<int>; break;
+      case 2: q=new CircularArrayQueue<int>; break;
+      case 3: q=new ArrayPQueue<int>; break;
+      case 4: q=new ListQueue<int>; break;
+      case 5: q=new ListPQueue<int>; break;
+      default: throw MyException(ErrorType::OutOfRange,3);
+    }
+    v.emplace_back(q);
+    std::cout<<"[OK] created queue ID="<<v.size()-1<<"\n";
+}
+
+/* ============= Append / Enqueue ============ */
+static void appendObj(std::vector<Item>& v)
+{
+    if(v.empty()){ std::cout<<"Nothing to modify\n"; return; }
+    int id=askID(v,"ID to append/enqueue");
+    int val; std::cout<<"value="; std::cin>>val;
+
+    if(v[id].isSeq){
+        std::cout<<"Insert: 1)front 2)back 3)index : ";
+        int opt; std::cin>>opt;
+        if(opt==1) v[id].seq->Prepend(val);
+        else if(opt==2) v[id].seq->Append(val);
+        else if(opt==3){ int idx; std::cout<<"index="; std::cin>>idx;
+                         v[id].seq->InsertAt(val,idx);}
+        else throw MyException(ErrorType::OutOfRange,3);
+    }else{
+        v[id].que->Enqueue(val);
+    }
+}
+
+/* ============= Remove item / Dequeue ============ */
+static void removeItm(std::vector<Item>& v)
+{
+    if(v.empty()){ std::cout<<"Nothing\n"; return; }
+    int id=askID(v,"ID");
+    if(v[id].isSeq){
+        int idx; std::cout<<"index="; std::cin>>idx;
+        v[id].seq = v[id].seq->RemoveAt(idx);
+    }else{
+        int x=v[id].que->Dequeue();
+        std::cout<<"dequeued "<<x<<"\n";
+    }
+}
+
+/* ============= subseq / concat (Seq only) ====== */
+static void subseqObj(std::vector<Item>& v)
+{
+    int id=askID(v,"Seq ID"); if(!v[id].isSeq) throw MyException(ErrorType::InvalidArg,6);
+    int s,e; std::cout<<"start end: "; std::cin>>s>>e;
+    v.emplace_back( v[id].seq->GetSubsequence(s,e) );
+    std::cout<<"new ID="<<v.size()-1<<"\n";
+}
+static void concatObj(std::vector<Item>& v)
+{
+    int a=askID(v,"Seq A"); int b=askID(v,"Seq B");
+    if(!v[a].isSeq||!v[b].isSeq) throw MyException(ErrorType::InvalidArg,6);
+    v.emplace_back( v[a].seq->Concat(v[b].seq) );
+    std::cout<<"new ID="<<v.size()-1<<"\n";
+}
+
+/* ============= remove object ================ */
+static void removeObj(std::vector<Item>& v)
+{
+    int id=askID(v,"ID to remove");
+    if(v[id].isSeq) delete v[id].seq; else delete v[id].que;
+    v.erase(v.begin()+id);
+    std::cout<<"removed\n";
+}
+
+/* =============== print ====================== */
+static void printAll(const std::vector<Item>& v)
+{
+    for(std::size_t i=0;i<v.size();++i){
+        std::cout<<"#"<<i<<" ";
+        if(v[i].isSeq){
+            auto* s=v[i].seq;
+            std::cout<<s->TypeName()<<" len="<<s->GetLength()<<" : ";
+            for(int j=0;j<s->GetLength();++j) std::cout<<s->Get(j)<<" ";
+        }else{
+            auto* q=v[i].que;
+            std::cout<<q->TypeName()<<" size="<<q->Size()<<" : ";
+            /* печатаем копию, чтобы не портить очередь */
+            Queue<int>* tmp=q->Clone();
+            while(!tmp->IsEmpty()) std::cout<<tmp->Dequeue()<<" ";
+            delete tmp;
         }
-    }
-
-    for (auto *ptr : seqs) {
-        delete ptr;
-    }
-    seqs.clear();
-    std::cout << "Program finished.\n";
-}
-
-static void handleCreate(std::vector<Sequence<int>*>& seqs) {
-    std::cout << "Choose type:\n"
-              << " 1) ArraySequence\n"
-              << " 2) ListSequence\n"
-              << " 3) ImmutableArraySequence\n"
-              << " 4) ImmutableListSequence\n"
-              << "Enter: ";
-    int choice;
-    std::cin >> choice;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000, '\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-
-    Sequence<int>* newSeq = nullptr;
-    switch (choice) {
-    case 1: {
-        newSeq = new ArraySequence<int>();
-        std::cout << "[OK] Created ArraySequence, ID=" << seqs.size() << "\n";
-        break;
-    }
-    case 2: {
-        newSeq = new ListSequence<int>();
-        std::cout << "[OK] Created ListSequence, ID=" << seqs.size() << "\n";
-        break;
-    }
-    case 3: {
-        std::cout << "Enter initial size for ImmutableArray: ";
-        int n;
-        std::cin >> n;
-        if (!std::cin || n < 0) {
-            std::cin.clear();
-            std::cin.ignore(10000, '\n');
-            throw MyException(ErrorType::NegativeSize, 0);
-        }
-        int* arr = new int[n];
-        for (int i = 0; i < n; i++) {
-            std::cout << "arr[" << i << "]=";
-            std::cin >> arr[i];
-            if (!std::cin) {
-                std::cin.clear();
-                std::cin.ignore(10000, '\n');
-                delete[] arr;
-                throw MyException(ErrorType::InvalidArg, 1);
-            }
-        }
-        newSeq = new ImmutableArraySequence<int>(arr, n);
-        delete[] arr;
-        std::cout << "[OK] Created ImmutableArraySequence, ID=" << seqs.size() << "\n";
-        break;
-    }
-    case 4: {
-        std::cout << "Enter initial size for ImmutableList: ";
-        int n;
-        std::cin >> n;
-        if (!std::cin || n < 0) {
-            std::cin.clear();
-            std::cin.ignore(10000, '\n');
-            throw MyException(ErrorType::NegativeSize, 0);
-        }
-        int* arr = new int[n];
-        for (int i = 0; i < n; i++) {
-            std::cout << "arr[" << i << "]=";
-            std::cin >> arr[i];
-            if (!std::cin) {
-                std::cin.clear();
-                std::cin.ignore(10000, '\n');
-                delete[] arr;
-                throw MyException(ErrorType::InvalidArg, 1);
-            }
-        }
-        newSeq = new ImmutableListSequence<int>(arr, n);
-        delete[] arr;
-        std::cout << "[OK] Created ImmutableListSequence, ID=" << seqs.size() << "\n";
-        break;
-    }
-    default:
-        throw MyException(ErrorType::OutOfRange, 3);
-    }
-
-    seqs.push_back(newSeq);
-}
-
-static void handleAppend(std::vector<Sequence<int>*>& seqs) {
-    if (seqs.empty()) {
-        std::cout << "[Warn] No sequences.\n";
-        return;
-    }
-    std::cout << "Existing IDs: [0.." << (seqs.size()-1) << "]\n"
-              << "Enter ID: ";
-    int id;
-    std::cin >> id;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000,'\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-    if (id < 0 || id >= (int)seqs.size()) {
-        throw MyException(ErrorType::OutOfRange, 1);
-    }
-
-    std::cout << "Value to append: ";
-    int val;
-    std::cin >> val;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000,'\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-
-    seqs[id] = seqs[id]->Append(val);
-    std::cout << "[OK] appended " << val << " to seq #" << id << "\n";
-}
-
-static void handlePrintAll(const std::vector<Sequence<int>*>& seqs) {
-    if (seqs.empty()) {
-        std::cout << "[Warn] No sequences.\n";
-        return;
-    }
-    for (int i = 0; i < (int)seqs.size(); i++) {
-        auto* seq = seqs[i];
-        std::cout << "Seq #" << i << " (" << seq->TypeName() 
-            << ", len=" << seq->GetLength() << "): ";
-        for (int j = 0; j < seq->GetLength(); j++) {
-            std::cout << seq->Get(j) << " ";
-        }
-        std::cout << "\n";
+        std::cout<<"\n";
     }
 }
 
-static void handleRemoveSequence(std::vector<Sequence<int>*>& seqs) {
-    if (seqs.empty()) {
-        std::cout << "[Warn] No sequences.\n";
-        return;
-    }
-    std::cout << "Which ID to remove? [0.." << (seqs.size()-1) << "]: ";
-    int id;
-    std::cin >> id;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000, '\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-    if (id < 0 || id >= (int)seqs.size()) {
-        throw MyException(ErrorType::OutOfRange, 1);
-    }
-
-    delete seqs[id];
-    seqs.erase(seqs.begin() + id);
-    std::cout << "[OK] Removed seq #" << id << "\n";
+/* ============== утилита ===================== */
+static int askID(const std::vector<Item>& v,const char* text)
+{
+    std::cout<<text<<" [0.."<<v.size()-1<<"]: ";
+    int id; std::cin>>id;
+    if(!std::cin) throw MyException(ErrorType::InvalidArg,1);
+    if(id<0||id>=(int)v.size()) throw MyException(ErrorType::OutOfRange,1);
+    return id;
 }
-
-static void handleSubsequence(std::vector<Sequence<int>*>& seqs) {
-    if (seqs.empty()) {
-        std::cout << "[Warn] No sequences.\n";
-        return;
-    }
-
-    std::cout << "Available sequences:\n";
-    for (int i = 0; i < (int)seqs.size(); i++) {
-        std::cout << "  ID=" << i << ", size=" << seqs[i]->GetLength() << "\n";
-    }
-
-    std::cout << "Enter ID of sequence to extract from: ";
-    int id;
-    std::cin >> id;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000, '\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-    if (id < 0 || id >= (int)seqs.size()) {
-        throw MyException(ErrorType::OutOfRange, 1);
-    }
-
-    int length = seqs[id]->GetLength();
-    if (length == 0) {
-        throw MyException(ErrorType::OutOfRange, 3);
-    }
-
-    std::cout << "Enter [start] and [end] indices (inclusive, 0 ≤ start ≤ end < "
-              << length << "): ";
-
-    int st, en;
-    std::cin >> st >> en;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000, '\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-
-    Sequence<int>* sub = seqs[id]->GetSubsequence(st, en);
-    seqs.push_back(sub);
-    std::cout << "[OK] subsequence added as ID=" << (seqs.size() - 1) << "\n";
-}
-
-
-static void handleConcat(std::vector<Sequence<int>*>& seqs) {
-    if (seqs.size() < 2) {
-        std::cout << "[Warn] Need at least 2 sequences.\n";
-        return;
-    }
-    std::cout << "Enter ID1, ID2: ";
-    int id1, id2;
-    std::cin >> id1 >> id2;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000,'\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-    if (id1 < 0 || id1 >= (int)seqs.size() || id2 < 0 || id2 >= (int)seqs.size()) {
-        throw MyException(ErrorType::OutOfRange, 1);
-    }
-    Sequence<int>* result = seqs[id1]->Concat(seqs[id2]);
-    seqs.push_back(result);
-    std::cout << "[OK] concat => new seq ID=" << (seqs.size()-1) << "\n";
-}
-
-static void handleZip(std::vector<Sequence<int>*>& seqs) {
-    if (seqs.size() < 2) {
-        std::cout << "[Warn] Need at least 2 sequences.\n";
-        return;
-    }
-    std::cout << "Enter ID1, ID2 for zip: ";
-    int id1, id2;
-    std::cin >> id1 >> id2;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000,'\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-    if (id1 < 0 || id1 >= (int)seqs.size() || id2 < 0 || id2 >= (int)seqs.size()) {
-        throw MyException(ErrorType::OutOfRange, 1);
-    }
-    auto* zipped = zip<int,int>(seqs[id1], seqs[id2]);
-    seqs.push_back((Sequence<int>*)zipped);
-    std::cout << "[OK] zip => new seq of pairs, ID=" << (seqs.size()-1) << "\n";
-}
-
-static void handleUnzip(std::vector<Sequence<int>*>& seqs) {
-    if (seqs.empty()) {
-        std::cout << "[Warn] No sequences.\n";
-        return;
-    }
-    std::cout << "Enter ID for unzip (should be seq of pairs): ";
-    int id;
-    std::cin >> id;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000,'\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-    if (id < 0 || id >= (int)seqs.size()) {
-        throw MyException(ErrorType::OutOfRange, 1);
-    }
-
-    auto* seqPairs = (Sequence<std::pair<int,int>>*) (seqs[id]);
-    auto res = unzip<int,int>(seqPairs);
-    seqs.push_back(res.first);
-    seqs.push_back(res.second);
-    std::cout << "[OK] unzip => new IDs=" << (seqs.size()-2)
-              << " and " << (seqs.size()-1) << "\n";
-}
-
-static void handleRemoveItem(std::vector<Sequence<int>*>& seqs) {
-    if (seqs.empty()) {
-        std::cout << "[Warn] No sequences.\n";
-        return;
-    }
-    std::cout << "Which sequence ID to remove item from? [0.." << (seqs.size()-1) << "]: ";
-    int id;
-    std::cin >> id;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000,'\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-    if (id < 0 || id >= (int)seqs.size()) {
-        throw MyException(ErrorType::OutOfRange, 1);
-    }
-
-    std::cout << "Index of element to remove: ";
-    int idx;
-    std::cin >> idx;
-    if (!std::cin) {
-        std::cin.clear();
-        std::cin.ignore(10000,'\n');
-        throw MyException(ErrorType::InvalidArg, 1);
-    }
-    seqs[id] = seqs[id]->RemoveAt(idx);
-    std::cout << "[OK] Removed item at index " << idx << " in seq #" << id << "\n";
-}
-

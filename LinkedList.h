@@ -251,34 +251,42 @@ public:
     }
 
     void ReverseSmart() {
-        if (length < 2) {
-            return;
-        }
-        Node* slow = head;
-        Node* fast = head;
-        bool hasCycle = false;
-        while (fast && fast->next) {
-            slow = slow->next;
-            fast = fast->next->next;
-            if (slow == fast) {
-                hasCycle = true;
-                break;
-            }
-        }
-        if (!hasCycle) {
-            reverse();
-            return;
-        }
-        Node* meet = slow;
-        Node* last = meet;
-        while (last->next != meet) {
-            last = last->next;
-        }
-        last->next = nullptr;
-        tail = last;
-        reverse();
-        tail->next = head;
+    if (length < 2) return;
+
+    Node* slow = head;
+    Node* fast = head;
+    bool hasCycle = false;
+
+    while (fast && fast->next){
+        slow = slow->next;
+        fast = fast->next->next;
+        if (slow == fast) { hasCycle = true; break; }
     }
+
+    if (!hasCycle){
+        reverse();
+        return;
+    }
+    
+    Node* p1 = head;
+    Node* p2 = slow;
+    while (p1 != p2)
+    {
+        p1 = p1->next;
+        p2 = p2->next;
+    }
+    Node* cycleStart = p1;
+    Node* cycleTail = cycleStart;
+    while (cycleTail->next != cycleStart){
+        cycleTail = cycleTail->next;
+    }
+    cycleTail->next = nullptr;
+    tail = cycleTail;
+
+    reverse();
+    tail->next = head;
+}
+
 
     void makeCycle() {
         MakeCycle(0);
