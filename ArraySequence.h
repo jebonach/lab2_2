@@ -9,11 +9,10 @@ class ArraySequence : public Sequence<T> {
 private:
     DynamicArray<T>* items;
     int count;
-    int capacity;
+    //убрать
 public:
     ArraySequence() {
-        capacity = 4;
-        items = new DynamicArray<T>(capacity);
+        items = new DynamicArray<T>(4);
         count = 0;
     }
 
@@ -21,8 +20,7 @@ public:
         if (length < 0) {
             throw MyException(ErrorType::NegativeSize, 0);
         }
-        capacity = (length > 0) ? (2 * length) : 1;
-        items = new DynamicArray<T>(capacity);
+        items = new DynamicArray<T>(length);
         for (int i = 0; i < length; i++) {
             items->Set(i, arr[i]);
         }
@@ -30,7 +28,6 @@ public:
     }
 
     ArraySequence(const ArraySequence<T>& other) {
-        capacity = other.capacity;
         count = other.count;
         items = new DynamicArray<T>(*other.items);
     }
@@ -85,10 +82,8 @@ public:
     }
 
     virtual Sequence<T>* Append(const T& item) override {
-        if (count == capacity) {
-            int newCap = capacity * 2;
-            items->Resize(newCap);
-            capacity = newCap;
+        if (count == items->Size()) {
+            items->Resize(items->Size() * 2);
         }
         items->Set(count, item);
         count++;
@@ -111,10 +106,8 @@ public:
     }
 
     virtual Sequence<T>* Prepend(const T& item) override {
-        if (count == capacity) {
-            int newCap = capacity * 2;
-            items->Resize(newCap);
-            capacity = newCap;
+        if (count == items->Size()) {
+            items->Resize(items->Size() * 2);
         }
         for (int i = count; i > 0; i--) {
             items->Set(i, items->Get(i - 1));
@@ -131,10 +124,8 @@ public:
         if (index >= count) {
             throw MyException(ErrorType::OutOfRange, 1);
         }
-        if (count == capacity) {
-            int newCap = capacity * 2;
-            items->Resize(newCap);
-            capacity = newCap;
+        if (count == items->Size()) {
+            items->Resize(items->Size() * 2);
         }
         for (int i = count; i > index; i--) {
             items->Set(i, items->Get(i - 1));
@@ -164,6 +155,7 @@ public:
     void smartReverse() {
         reverse();
     }
+    //абсолютно ненужно
 
     virtual Sequence<T>* Clone() const override {
         return new ArraySequence<T>(*this);
