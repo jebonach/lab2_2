@@ -65,9 +65,8 @@ void TestListSequence()
 }
 
 template<class Seq>
-void ReverseScenarios(const char* tag)
+void ReverseScenarios()
 {
-    std::cout<<"  Reverse‑block for "<<tag<<'\n';
 
     { Seq s; s.reverse(); checkEqual(s,{}); }
 
@@ -171,13 +170,11 @@ void TestCycleSmartReverse()
 
 int main()
 {
-    std::cout<<"Running tests...\n";
-
     TestDynamicArray();
     TestLinkedList();
     TestArraySequence();
     TestListSequence();
-    ReverseScenarios<ListSequence<int>>("ListSequence");
+    ReverseScenarios<ListSequence<int>>();
 
     TestOtherTypes();
     TestManyRepeats();
@@ -185,6 +182,6 @@ int main()
     TestReverseTwice<ListSequence<int>>();
     TestCycleSmartReverse();
 
-    std::cout<<"All tests passed successfully!\n";
+    std::cout<<"Sequence tests passed successfully!\n";
     return 0;
 }

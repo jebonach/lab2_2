@@ -1,95 +1,60 @@
 #pragma once
 #include "Queue.h"
-#include "DynamicArray.h"
+#include "ArraySequence.h"
 #include "errors.h"
 
 template<class T>
 class ArrayQueue : public Queue<T>
 {
 private:
-    DynamicArray<T>* items;
-    std::size_t count;
+    ArraySequence<T>* items;
 
 public:
-    ArrayQueue()
-        : items(new DynamicArray<T>(4)),
-          count(0)
-    {}
+    ArrayQueue() : items(new ArraySequence<T>()){}
 
     ArrayQueue(const ArrayQueue& other)
-        : items(new DynamicArray<T>(other.items->GetSize())),
-          count(other.count)
-    {
-        for (std::size_t i = 0; i < count; ++i){
-            items->Set(i, (*other.items)[i]);
-        }
-    }
+        : items(new ArraySequence<T>(*other.items)) {}
 
-    ~ArrayQueue() override {
-        delete items;
-    }
+    ~ArrayQueue() override { delete items; }
 
-    void Enqueue(const T& value) override {
-        if (count == items->GetSize()){
-            std::size_t newCap = items->GetSize() * 2;
-            auto* tmp = new DynamicArray<T>(newCap);
-
-            for (std::size_t i = 0; i < count; ++i){
-                tmp->Set(i, (*items)[i]);
-            }
-            delete items;
-            items = tmp;
-        }
-
-        items->Set(count, value);
-        count++;
+    void Enqueue(const T& v) override {
+        items->Append(v);
     }
 
     T Dequeue() override {
-        if (IsEmpty()){
-            throw MyException(ErrorType::OutOfRange, 5);
-        }
-        T front = items->Get(0);
-
-        for (std::size_t i = 1; i < count; ++i) {
-            items->Set(i - 1, items->Get(i));
-        }
-        count--;
+        if (IsEmpty()) throw MyException(ErrorType::OutOfRange,5);
+        T front = items->GetFirst();
+        items->RemoveAt(0);
         return front;
     }
 
     T& GetFront() override {
-        if (IsEmpty())
-            throw MyException(ErrorType::OutOfRange, 5);
+        return (*items)[0];
+    }
+    const T& GetFront() const override {
         return (*items)[0];
     }
 
-    const T& GetFront() const override {
-        return const_cast<ArrayQueue*>(this)->GetFront();
+    bool IsEmpty() const override {
+        return items->GetLength() == 0;
     }
-    
-    bool IsEmpty() const override{
-        return count == 0;
+    bool IsFull () const override {
+        return false;
     }
-
-    bool IsFull() const override {
-        return count == items->GetSize();
-    }
-
     std::size_t Size() const override {
-        return count;
+        return items->GetLength();
     }
 
     void Clear() override {
-        count = 0;
+        items->Clear();
     }
 
     const char* TypeName() const override {
         return "ArrayQueue";
     }
 
-    Queue<T>* Clone() const override
-    {
+    Queue<T>* Clone() const override {
         return new ArrayQueue<T>(*this);
     }
+
 };

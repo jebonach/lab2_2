@@ -16,7 +16,7 @@
 #include "ListPQueue.h"
 
 #include "errors.h"
-#include "how_to_train_your_exception.h"
+#include "NewExceptions.h"
 
 struct Item
 {
@@ -39,7 +39,7 @@ static void removeItm (std::vector<Item>&);
 
 static int  askID     (const std::vector<Item>&,const char* prompt);
 
-/* ================ MAIN LOOP ================= */
+
 void runUI()
 {
     std::vector<Item> objs;
@@ -80,13 +80,13 @@ void runUI()
     std::cout<<"Program finished.\n";
 }
 
-/* ============ создание ===================== */
+
 static void createSeq(std::vector<Item>& v);
 static void createQue(std::vector<Item>& v);
 
 static void createObj(std::vector<Item>& v)
 {
-    std::cout<<"(1)Sequence  (2)Queue : ";
+    std::cout<<"(1)Sequence \n(2)Queue : ";
     int t; std::cin>>t;
     if(t==1) createSeq(v);
     else if(t==2) createQue(v);
@@ -94,7 +94,7 @@ static void createObj(std::vector<Item>& v)
 }
 static void createSeq(std::vector<Item>& v)
 {
-    std::cout<<"Seq type: 1)Array 2)List 3)ImmArray 4)ImmList : ";
+    std::cout<<"Seq type: \n1)Array \n2)List \n3)ImmArray \n4)ImmList : ";
     int c; std::cin>>c;
     Sequence<int>* s=nullptr;
     if(c==1) s=new ArraySequence<int>;
@@ -112,7 +112,7 @@ static void createSeq(std::vector<Item>& v)
 }
 static void createQue(std::vector<Item>& v)
 {
-    std::cout<<"Queue: 1)ArrayQ 2)Circular 3)ArrayP 4)ListQ 5)ListP : ";
+    std::cout<<"Queue: \n1)ArrayQ \n2)Circular \n3)ArrayP \n4)ListQ \n5)ListP : ";
     int c; std::cin>>c;
     Queue<int>* q=nullptr;
     switch(c){
@@ -127,7 +127,7 @@ static void createQue(std::vector<Item>& v)
     std::cout<<"[OK] created queue ID="<<v.size()-1<<"\n";
 }
 
-/* ============= Append / Enqueue ============ */
+
 static void appendObj(std::vector<Item>& v)
 {
     if(v.empty()){ std::cout<<"Nothing to modify\n"; return; }
@@ -135,60 +135,60 @@ static void appendObj(std::vector<Item>& v)
     int val; std::cout<<"value="; std::cin>>val;
 
     if(v[id].isSeq){
-        std::cout<<"Insert: 1)front 2)back 3)index : ";
+        std::cout<<"Insert: \n1)front \n2)back \n3)index : ";
         int opt; std::cin>>opt;
         if(opt==1) v[id].seq->Prepend(val);
         else if(opt==2) v[id].seq->Append(val);
-        else if(opt==3){ int idx; std::cout<<"index="; std::cin>>idx;
-                         v[id].seq->InsertAt(val,idx);}
+        else if(opt==3){
+            int idx;
+            std::cout<<"index="; 
+            std::cin>>idx;
+            v[id].seq->InsertAt(val,idx);
+        }
         else throw MyException(ErrorType::OutOfRange,3);
     }else{
         v[id].que->Enqueue(val);
     }
 }
 
-/* ============= Remove item / Dequeue ============ */
-static void removeItm(std::vector<Item>& v)
-{
-    if(v.empty()){ std::cout<<"Nothing\n"; return; }
+
+static void removeItm(std::vector<Item>& v) {
+    if(v.empty()){
+        std::cout<<"Nothing\n"; 
+        return;
+    }
     int id=askID(v,"ID");
-    if(v[id].isSeq){
+    if(v[id].isSeq) {
         int idx; std::cout<<"index="; std::cin>>idx;
         v[id].seq = v[id].seq->RemoveAt(idx);
-    }else{
+    } else{
         int x=v[id].que->Dequeue();
         std::cout<<"dequeued "<<x<<"\n";
     }
 }
 
-/* ============= subseq / concat (Seq only) ====== */
-static void subseqObj(std::vector<Item>& v)
-{
+static void subseqObj(std::vector<Item>& v) {
     int id=askID(v,"Seq ID"); if(!v[id].isSeq) throw MyException(ErrorType::InvalidArg,6);
     int s,e; std::cout<<"start end: "; std::cin>>s>>e;
     v.emplace_back( v[id].seq->GetSubsequence(s,e) );
     std::cout<<"new ID="<<v.size()-1<<"\n";
 }
-static void concatObj(std::vector<Item>& v)
-{
+
+static void concatObj(std::vector<Item>& v) {
     int a=askID(v,"Seq A"); int b=askID(v,"Seq B");
     if(!v[a].isSeq||!v[b].isSeq) throw MyException(ErrorType::InvalidArg,6);
     v.emplace_back( v[a].seq->Concat(v[b].seq) );
     std::cout<<"new ID="<<v.size()-1<<"\n";
 }
 
-/* ============= remove object ================ */
-static void removeObj(std::vector<Item>& v)
-{
+static void removeObj(std::vector<Item>& v) {
     int id=askID(v,"ID to remove");
     if(v[id].isSeq) delete v[id].seq; else delete v[id].que;
     v.erase(v.begin()+id);
     std::cout<<"removed\n";
 }
 
-/* =============== print ====================== */
-static void printAll(const std::vector<Item>& v)
-{
+static void printAll(const std::vector<Item>& v) {
     for(std::size_t i=0;i<v.size();++i){
         std::cout<<"#"<<i<<" ";
         if(v[i].isSeq){
@@ -198,7 +198,6 @@ static void printAll(const std::vector<Item>& v)
         }else{
             auto* q=v[i].que;
             std::cout<<q->TypeName()<<" size="<<q->Size()<<" : ";
-            /* печатаем копию, чтобы не портить очередь */
             Queue<int>* tmp=q->Clone();
             while(!tmp->IsEmpty()) std::cout<<tmp->Dequeue()<<" ";
             delete tmp;
@@ -207,9 +206,7 @@ static void printAll(const std::vector<Item>& v)
     }
 }
 
-/* ============== утилита ===================== */
-static int askID(const std::vector<Item>& v,const char* text)
-{
+static int askID(const std::vector<Item>& v,const char* text) {
     std::cout<<text<<" [0.."<<v.size()-1<<"]: ";
     int id; std::cin>>id;
     if(!std::cin) throw MyException(ErrorType::InvalidArg,1);

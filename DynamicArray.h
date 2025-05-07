@@ -1,6 +1,6 @@
 #pragma once
 #include <stdexcept>
-#include "how_to_train_your_exception.h"
+#include "NewExceptions.h"
 
 template <class T>
 class DynamicArray {

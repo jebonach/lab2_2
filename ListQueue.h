@@ -62,26 +62,26 @@ public:
         list->Clear();
     }
 
-    Queue<T>* Concat(const Queue<T>& other) const override {
-    auto* result = new ListQueue<T>(*this);
-   Queue<T>* tmp = other.Clone();
-    while (!tmp->IsEmpty()){
-        result->Enqueue(tmp->Dequeue());
-    }
-    delete tmp;
-    return result;
-    }
+//     Queue<T>* Concat(const Queue<T>& other) const override {
+//     auto* result = new ListQueue<T>(*this);
+//     Queue<T>* tmp = other.Clone();
+//     while (!tmp->IsEmpty()){
+//         result->Enqueue(tmp->Dequeue());
+//     }
+//     delete tmp;
+//     return result;
+//     }
 
-    Queue<T>* Subqueue(std::size_t start, std::size_t end) const override {
-        if (start > end || end >= Size()) {
-            throw MyException(ErrorType::OutOfRange, 4);
-        }
-        auto* sub = new ListQueue<T>();
-        for (std::size_t i = start; i <= end; ++i)
-            sub->Enqueue(list->Get(static_cast<int>(i)));
+//     Queue<T>* Subqueue(std::size_t start, std::size_t end) const override {
+//         if (start > end || end >= Size()) {
+//             throw MyException(ErrorType::OutOfRange, 4);
+//         }
+//         auto* sub = new ListQueue<T>();
+//         for (std::size_t i = start; i <= end; ++i)
+//             sub->Enqueue(list->Get(static_cast<int>(i)));
 
-        return sub;
-    }
+//         return sub;
+//     }
 
     const char* TypeName() const override {
         return "ListQueue";

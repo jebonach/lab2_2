@@ -2,7 +2,8 @@
 #include "DynamicArray.h"
 #include "Sequence.h"
 #include <stdexcept>
-#include "how_to_train_your_exception.h"
+#include "NewExceptions.h"
+#include "errors.h"
 
 template <class T>
 class ArraySequence : public Sequence<T> {
@@ -143,6 +144,10 @@ public:
         return newSeq;
     }
 
+    int Size() const {
+        return count;
+    }
+
     void reverse() {
         int n = count;
         for (int i = 0; i < n / 2; ++i) {
@@ -155,7 +160,18 @@ public:
     void smartReverse() {
         reverse();
     }
-    //абсолютно ненужно
+
+    T& operator[](int i) {
+        return items->operator[](i);
+    }
+
+    const T& operator[](int i) const {
+        return items->operator[](i);
+    }
+
+    void Clear() {
+        count = 0;
+    }
 
     virtual Sequence<T>* Clone() const override {
         return new ArraySequence<T>(*this);

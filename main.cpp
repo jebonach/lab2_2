@@ -11,7 +11,9 @@ int main() {
 в cyclequque убрать count capacity, делать через разность head tail
 
         addition2:
-
+сделать на arraysequence.h а не dynamicarray.h
+Добавить тесты
+сделать Pqueue на heap
 
         whims:
 

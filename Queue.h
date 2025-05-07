@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include "errors.h"
 
 template<class T>
 class Queue {
@@ -76,4 +77,3 @@ class Student {
             return name == other.name && age == other.age && gpa == other.gpa;
         }
     };
-

@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "how_to_train_your_exception.h"
+#include "NewExceptions.h"
 
 struct ErrorInfo {
     int code;

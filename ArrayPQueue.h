@@ -1,109 +1,92 @@
 #pragma once
-
 #include "Queue.h"
-#include "DynamicArray.h"
+#include "ArraySequence.h"
 #include "errors.h"
-#include <functional> 
+#include <functional>
 
 template<class T, class Compare = std::less<T>>
-class ArrayPQueue : public Queue<T>
-{
-private:
-    DynamicArray<T>* items;
-    std::size_t count;
+class ArrayPQueue : public Queue<T> {
+    ArraySequence<T>* heap;
     Compare cmp;
-
 public:
-    using Self = ArrayPQueue<T, Compare>;
-    
-    explicit ArrayPQueue(std::size_t initCap = 8,
-                               Compare comp = Compare{})
-        : items(new DynamicArray<T>(initCap)),
-          count(0),
-          cmp(comp) {}
-
+    ArrayPQueue() : heap(new ArraySequence<T>()) {}
     ArrayPQueue(const ArrayPQueue& other)
-        : items(new DynamicArray<T>(*other.items)),
-          count(other.count),
-          cmp(other.cmp) {}
+        : heap(new ArraySequence<T>(*other.heap)), cmp(other.cmp) {}
 
-    ~ArrayPQueue() override { 
-        delete items;
+    ~ArrayPQueue() override { delete heap; }
+
+    static std::size_t parent(std::size_t i) {
+        return (i-1)>>1;
+    }
+    static std::size_t l  (std::size_t i) {
+        return 2*i+1;
+    }
+    static std::size_t r (std::size_t i) {
+        return 2*i+2;
     }
 
-    void Enqueue(const T& value) override{
-        if (count == items->GetSize()){
-            std::size_t newCap = items->GetSize() * 2;
-            auto* tmp = new DynamicArray<T>(newCap);
-
-            for (std::size_t i = 0; i < count; ++i){
-                tmp->Set(i, (*items)[i]);
+    void siftUp(std::size_t i) {
+        while (i>0 && cmp((*heap)[parent(i)], (*heap)[i])) {
+            std::swap((*heap)[i], (*heap)[parent(i)]);
+            i = parent(i);
+        }
+    }
+    void siftDown(std::size_t i) {
+        while (true) {
+            std::size_t best = i;
+            if (l(i) < heap->GetLength() && cmp((*heap)[best], (*heap)[l(i)])) {
+                best = l(i);
             }
-            delete items;
-            items = tmp;
+            if (r(i) < heap->GetLength() && cmp((*heap)[best], (*heap)[r(i)])) {
+                best = r(i);
+            }
+            if (best == i) {
+                break;
+            }
+            std::swap((*heap)[i], (*heap)[best]);
+            i = best;
         }
-
-        std::size_t lo = 0, hi = count;
-        while (lo < hi)
-        {
-            std::size_t mid = (lo + hi) / 2;
-            if (cmp(value, items->Get(mid)))
-                hi = mid;
-            else
-                lo = mid + 1;
-        }
-
-        for (std::size_t i = count; i > lo; --i) {
-            items->Set(i, items->Get(i - 1));
-        }
-        items->Set(lo, value);
-        ++count;
     }
 
+    void Enqueue(const T& v) override {
+        heap->Append(v);
+        siftUp(heap->GetLength()-1);
+    }
     T Dequeue() override {
-        if (IsEmpty())
-            throw MyException(ErrorType::OutOfRange, 5);
-
-        T top = items->Get(0);
-        for (std::size_t i = 1; i < count; ++i)
-            items->Set(i - 1, items->Get(i));
-        --count;
+        if (IsEmpty()) throw MyException(ErrorType::OutOfRange,5);
+        T top = (*heap)[0];
+        (*heap)[0] = (*heap)[heap->GetLength()-1];
+        heap->RemoveAt(heap->GetLength()-1);
+        if (!IsEmpty()) siftDown(0);
         return top;
     }
 
     T& GetFront() override {
-        if (IsEmpty()) {
-            throw MyException(ErrorType::OutOfRange, 5);
-        }
-        return (*items)[0];
+        return (*heap)[0];
     }
-
     const T& GetFront() const override {
-        return const_cast<Self*>(this)->GetFront();
+        return (*heap)[0];
     }
-
 
     bool IsEmpty() const override {
-        return count == 0;
+        return heap->Size() == 0;
     }
-    
-    bool IsFull() const override {
-        return count == items->GetSize();
+    bool IsFull()  const override {
+        return false; // а как иначе?
     }
-
     std::size_t Size() const override {
-        return count;
+        return heap->GetLength();
     }
 
     void Clear() override {
-        count = 0;
+        heap->Clear();
     }
 
     const char* TypeName() const override {
-        return "ArrayPQueue";
+        return "ArrayPQueue(heap)";
+    }
+    Queue<T>* Clone() const override {
+        return new ArrayPQueue<T>(*this);
     }
 
-    Queue<T>* Clone() const override {
-        return new Self(*this);
-    }
 };

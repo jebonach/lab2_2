@@ -54,7 +54,7 @@ public:
 
         items->Set(tail, value);
         tail = (tail + 1) % items->GetSize();
-        ++count;
+        count++;
     }
 
     T Dequeue() override {
@@ -63,7 +63,7 @@ public:
 
         T front = items->Get(head);
         head = (head + 1) % items->GetSize();
-        count++;
+        count--;
         return front;
     }
 
